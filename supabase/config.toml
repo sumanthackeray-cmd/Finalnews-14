@@ -1,0 +1,10 @@
+project_id = "pbpjwwqsfrffabpefxri"
+
+[functions.ai-resume]
+verify_jwt = true
+
+[functions.ats-score]
+verify_jwt = true
+
+[functions.cover-letter]
+verify_jwt = true
