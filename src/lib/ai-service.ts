@@ -189,12 +189,12 @@ SECTION 4 — PRICING (cv.vogats.com/#pricing)
 
 PLANS:
 
-FREE PLAN — ₹0/month
-- Basic resume builder access
-- Limited AI generations
-- 1 resume download
-- Standard templates
-- Best for: First-time users trying the platform
+FREE ACCOUNT — ₹0/month
+- Build, edit, and style your resume for free
+- Complete visual preview of your resume
+- Standard templates access
+- NO DOWNLOAD ALLOWED (Download is locked and requires upgrading to a paid plan)
+- Best for: Styling and preparing your resume
 
 PRO MONTHLY PLAN — Paid
 - Unlimited AI resume generations
@@ -203,7 +203,7 @@ PRO MONTHLY PLAN — Paid
 - Resume tailoring to any job
 - Interview prep tools
 - Priority support
-- PDF + DOCX downloads
+- PDF + DOCX downloads (Unlimited)
 
 PRO ANNUAL PLAN — Paid (Best Value)
 - Everything in Pro Monthly
@@ -211,10 +211,11 @@ PRO ANNUAL PLAN — Paid (Best Value)
 - Best for: Active job seekers doing multiple applications
 
 IMPORTANT PRICING NOTES:
-- Free plan available — no credit card needed
+- You can build and preview your resume completely for free.
+- Downloading any resume as PDF or DOCX format is strictly locked for free users and requires a paid Pro plan subscription. No free downloads are allowed.
 - 7-day money-back guarantee on all paid plans
 - Cancel anytime from Account Settings → Billing
-- Payments processed securely via Stripe
+- Payments processed securely via Razorpay
 - Indian payment methods accepted (UPI, Net Banking, Cards)
 
 For current pricing amounts, direct users to: cv.vogats.com/#pricing
@@ -439,10 +440,13 @@ Q: What is Vogats AI?
 A: Vogats AI is an AI-powered resume builder at cv.vogats.com that helps you create professional, ATS-optimized resumes in minutes using artificial intelligence.
 
 Q: Is Vogats AI free?
-A: Yes! There's a free plan with basic features. Paid Pro plans unlock unlimited AI generations, ATS checks, all templates, and more.
+A: You can build, customize, and visually preview your resume completely for free. However, downloading your resume in PDF or DOCX format is locked on the free account and requires upgrading to a paid Pro subscription plan. No free downloads are allowed.
+
+Q: Can I download my resume for free?
+A: No, downloading your resume in PDF or DOCX format is a premium feature. While you can build, edit, and preview your resume completely for free, you must subscribe to a paid Pro plan to download the final file.
 
 Q: How does the AI resume builder work?
-A: Enter your work experience → our AI generates professional bullet points, summaries, and a complete resume. You can then edit, download, or tailor it to specific jobs.
+A: Enter your work experience → our AI generates professional bullet points, summaries, and a complete resume. You can then edit and customize it for free. To download it as PDF or DOCX, or to tailor it to specific jobs, upgrade to a paid Pro subscription plan.
 
 Q: What is ATS?
 A: ATS (Applicant Tracking System) is software companies use to automatically screen resumes before a human sees them. 75% of resumes are rejected by ATS. Vogats AI optimizes your resume to pass these systems.
