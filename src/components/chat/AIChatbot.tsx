@@ -399,35 +399,37 @@ export function AIChatbot() {
         .chat-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
       `}</style>
 
-      {/* Header Bar - dynamic sizes: 25px mobile, 35px desktop, handles sliding hide scroll transitions */}
-      <div 
-        className={cn(
-          "border-b border-border flex flex-col shrink-0 px-4 relative z-10 transition-all duration-350 ease-in-out justify-center",
-          isHeaderVisible ? "h-[25px] md:h-[35px]" : "h-0 py-0 border-b-0 overflow-hidden"
-        )} 
-        style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
-      >
-        <div className="flex items-center justify-between h-full w-full">
-          <div className="flex items-center gap-1.5 md:gap-2.5">
-            <img src={logo} alt="Vogats AI Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
-            <div className="flex items-baseline gap-1">
-              <h3 className="font-display font-black text-[10px] md:text-[13px] text-text leading-none">Vogats AI</h3>
-              <span className="hidden md:inline text-[7px] text-muted font-black uppercase tracking-widest leading-none">Career Co-Pilot</span>
+      {/* Header Wrapper - stays at physically constant size to prevent layout feedback scroll blinking */}
+      <div className="h-[25px] md:h-[35px] w-full shrink-0 relative overflow-visible z-20">
+        <div 
+          className={cn(
+            "absolute inset-0 border-b border-border flex flex-col px-4 transition-all duration-300 ease-in-out justify-center",
+            isHeaderVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+          )} 
+          style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+        >
+          <div className="flex items-center justify-between h-full w-full">
+            <div className="flex items-center gap-1.5 md:gap-2.5">
+              <img src={logo} alt="Vogats AI Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
+              <div className="flex items-baseline gap-1">
+                <h3 className="font-display font-black text-[10px] md:text-[13px] text-text leading-none">Vogats AI</h3>
+                <span className="hidden md:inline text-[7px] text-muted font-black uppercase tracking-widest leading-none">Career Co-Pilot</span>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button 
-              onClick={() => setIsFullScreen(!isFullScreen)}
-              className="hidden md:flex w-5 h-5 items-center justify-center rounded text-muted hover:bg-surface transition-colors"
-            >
-              {isFullScreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
-            </button>
-            <button 
-              onClick={handleCloseChat}
-              className="w-5 h-5 flex items-center justify-center rounded text-muted hover:bg-surface transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className="hidden md:flex w-5 h-5 items-center justify-center rounded text-muted hover:bg-surface transition-colors"
+              >
+                {isFullScreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+              </button>
+              <button 
+                onClick={handleCloseChat}
+                className="w-5 h-5 flex items-center justify-center rounded text-muted hover:bg-surface transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
