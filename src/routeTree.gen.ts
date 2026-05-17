@@ -9,14 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoverLetterRouteImport } from './routes/cover-letter'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ResumeIdRouteImport } from './routes/resume.$id'
 
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -42,6 +49,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,74 +67,95 @@ const ResumeIdRoute = ResumeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cover-letter': typeof CoverLetterRoute
   '/dashboard': typeof DashboardRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/resume/$id': typeof ResumeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cover-letter': typeof CoverLetterRoute
   '/dashboard': typeof DashboardRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/resume/$id': typeof ResumeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cover-letter': typeof CoverLetterRoute
   '/dashboard': typeof DashboardRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/resume/$id': typeof ResumeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
     | '/contact'
     | '/cover-letter'
     | '/dashboard'
     | '/privacy'
+    | '/refund'
     | '/resume/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
     | '/contact'
     | '/cover-letter'
     | '/dashboard'
     | '/privacy'
+    | '/refund'
     | '/resume/$id'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/auth'
     | '/contact'
     | '/cover-letter'
     | '/dashboard'
     | '/privacy'
+    | '/refund'
     | '/resume/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   CoverLetterRoute: typeof CoverLetterRoute
   DashboardRoute: typeof DashboardRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundRoute: typeof RefundRoute
   ResumeIdRoute: typeof ResumeIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -158,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,11 +217,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   CoverLetterRoute: CoverLetterRoute,
   DashboardRoute: DashboardRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundRoute: RefundRoute,
   ResumeIdRoute: ResumeIdRoute,
 }
 export const routeTree = rootRouteImport
