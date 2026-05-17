@@ -136,21 +136,22 @@ export function Navbar() {
                 <Sparkles className="w-5 h-5 animate-pulse" />
                 Chat with AI
               </button>
-              {[
-                { label: "Features", icon: "⚡" },
-                { label: "Pricing", icon: "💳" },
-                { label: "FAQ", icon: "❓" }
-              ].map((item) => (
-                <a
-                  key={item.label}
-                  href={`#${item.label.toLowerCase()}`}
-                  className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                  onClick={closeMobileMenu}
-                >
-                  <span className="text-xl w-6">{item.icon}</span>
-                  {item.label}
-                </a>
-              ))}
+              <Link
+                to="/"
+                className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
+                onClick={closeMobileMenu}
+              >
+                <span className="text-xl w-6">🏠</span>
+                Home
+              </Link>
+              <a
+                href="/#pricing"
+                className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
+                onClick={closeMobileMenu}
+              >
+                <span className="text-xl w-6">💳</span>
+                Pricing
+              </a>
               <Link
                 to="/templates"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
@@ -160,20 +161,20 @@ export function Navbar() {
                 Templates
               </Link>
               <Link
-                to="/contact"
-                className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
-              >
-                <span className="text-xl w-6">📬</span>
-                Contact
-              </Link>
-              <Link
                 to="/about"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
                 onClick={closeMobileMenu}
               >
                 <span className="text-xl w-6">🚀</span>
                 About Us
+              </Link>
+              <Link
+                to="/contact"
+                className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
+                onClick={closeMobileMenu}
+              >
+                <span className="text-xl w-6">📬</span>
+                Contact
               </Link>
             </nav>
 
@@ -243,16 +244,20 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-10 lg:flex">
-            {["Features", "Pricing", "FAQ"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
-              </a>
-            ))}
+            <Link
+              to="/"
+              className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
+            >
+              Home
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
+            </Link>
+            <a
+              href="/#pricing"
+              className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
+            >
+              Pricing
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
+            </a>
             <Link
               to="/templates"
               className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
@@ -261,17 +266,17 @@ export function Navbar() {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
             </Link>
             <Link
+              to="/about"
+              className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
+            >
+              About Us
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
+            </Link>
+            <Link
               to="/contact"
               className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
             >
               Contact
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
-            </Link>
-            <Link
-              to="/about"
-              className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
-            >
-              About
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
             </Link>
             <button
