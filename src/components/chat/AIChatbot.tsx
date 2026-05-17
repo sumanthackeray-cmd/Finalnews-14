@@ -84,7 +84,8 @@ function formatRawUrlsToMarkdown(content: string): string {
   if (!content) return "";
   
   // Matches raw urls like http(s)://... or cv.vogats.com/... not already wrapped in markdown parenthesis/brackets
-  const urlRegex = /(?<!\(|\[)(https?:\/\/[^\s\)]+|cv\.vogats\.com[^\s\)]*)/gi;
+  // Strictly matches alphanumeric, dots, slashes, dashes, hashes, and query parameters to avoid swallowing asterisks or formatting tokens
+  const urlRegex = /(?<!\(|\[)(https?:\/\/[a-zA-Z0-9\.\/_\-#\?&%=]+|cv\.vogats\.com[a-zA-Z0-9\.\/_\-#\?&%=]*)/gi;
   
   return content.replace(urlRegex, (url) => {
     let targetUrl = url;
@@ -120,7 +121,15 @@ export function AIChatbot() {
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const [userHasScrolledUp, setUserHasScrolledUp] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const lastScrollTopRef = useRef(0);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -478,43 +487,47 @@ export function AIChatbot() {
         .chat-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
       `}</style>
 
-      {/* Header Wrapper - stays at physically constant size to prevent layout feedback scroll blinking */}
-      <div className="h-[25px] md:h-[35px] w-full shrink-0 relative overflow-visible z-20">
-        <div 
-          className={cn(
-            "absolute inset-0 border-b border-border flex flex-col px-4 transition-all duration-300 ease-in-out justify-center",
-            isHeaderVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
-          )} 
-          style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
-        >
-          <div className="flex items-center justify-between h-full w-full">
-            <div className="flex items-center gap-1.5 md:gap-2.5">
-              <img src={logo} alt="Vogats AI Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
-              <div className="flex items-baseline gap-1">
-                <h3 className="font-display font-black text-[10px] md:text-[13px] text-text leading-none">Vogats AI</h3>
-              </div>
+      {/* Header Wrapper - absolute positioned to overlay on top without physical flex height blocking scroll */}
+      <div 
+        className={cn(
+          "absolute top-0 inset-x-0 border-b border-border flex flex-col px-4 transition-all duration-300 ease-in-out justify-center z-20",
+          isHeaderVisible ? "translate-y-0 opacity-100 h-[25px] md:h-[35px]" : "-translate-y-full opacity-0 pointer-events-none h-0 border-b-0"
+        )} 
+        style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+      >
+        <div className="flex items-center justify-between h-full w-full">
+          <div className="flex items-center gap-1.5 md:gap-2.5">
+            <img src={logo} alt="Vogats AI Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
+            <div className="flex items-baseline gap-1">
+              <h3 className="font-display font-black text-[10px] md:text-[13px] text-text leading-none">Vogats AI</h3>
             </div>
-            <div className="flex items-center gap-1.5">
-              <button 
-                onClick={() => setIsFullScreen(!isFullScreen)}
-                className="hidden md:flex w-5 h-5 items-center justify-center rounded text-muted hover:bg-surface transition-colors"
-              >
-                {isFullScreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
-              </button>
-              <button 
-                onClick={handleCloseChat}
-                className="w-5 h-5 flex items-center justify-center rounded text-muted hover:bg-surface transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button 
+              onClick={() => setIsFullScreen(!isFullScreen)}
+              className="hidden md:flex w-5 h-5 items-center justify-center rounded text-muted hover:bg-surface transition-colors"
+            >
+              {isFullScreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+            </button>
+            <button 
+              onClick={handleCloseChat}
+              className="w-5 h-5 flex items-center justify-center rounded text-muted hover:bg-surface transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation - hidden once conversation is started */}
+      {/* Tab Navigation - offset dynamically when header is visible */}
       {messages.length <= 1 && (
-        <div className="flex items-center px-4 py-2 gap-2 border-b border-border animate-in fade-in duration-200" style={{ backgroundColor: "var(--card)" }}>
+        <div 
+          className="flex items-center px-4 py-2 gap-2 border-b border-border animate-in fade-in duration-200 shrink-0 transition-all duration-300" 
+          style={{ 
+            backgroundColor: "var(--card)",
+            marginTop: isHeaderVisible ? (isMobile ? "25px" : "35px") : "0px"
+          }}
+        >
           {[
             { id: "chat", icon: MessageSquare, label: "AI Coach" },
             { id: "analyze", icon: Target, label: "ATS Analysis" },
@@ -544,7 +557,10 @@ export function AIChatbot() {
             <div 
               ref={scrollRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto chat-scrollbar px-4 md:px-6 py-6 scroll-smooth space-y-8"
+              className="flex-1 overflow-y-auto chat-scrollbar px-4 md:px-6 py-6 scroll-smooth space-y-8 transition-all duration-300"
+              style={{
+                paddingTop: isHeaderVisible ? (isMobile ? "35px" : "45px") : "10px"
+              }}
             >
               <div className="space-y-8 w-full max-w-[850px] mx-auto">
                 {messages.length <= 1 ? (
