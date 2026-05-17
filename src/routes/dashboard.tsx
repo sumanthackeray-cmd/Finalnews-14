@@ -15,6 +15,8 @@ import logo from "@/assets/logo.png";
 import { getUserSubscription, checkAccess, incrementResumeUsage, PLANS, Subscription, saveSubscription, createSubscription, PlanId } from "@/lib/subscription";
 import { BadgeCheck, Infinity as InfinityIcon, AlertCircle, Loader2 } from "lucide-react";
 import { PricingModal } from "@/components/PricingModal";
+import { Navbar } from "@/components/landing/Navbar";
+import { Footer } from "@/components/landing/Footer";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
@@ -227,76 +229,8 @@ function Dashboard() {
   const remainingDays = subscription ? Math.max(0, Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : 0;
 
   return (
-    <div className="min-h-screen pb-20 sm:pb-12 bg-bg text-text">
-      {/* ─── NAVBAR ─── */}
-      <nav className="glass sticky top-0 z-[100] border-b border-border h-16 px-4 sm:px-6 flex items-center justify-between">
-        <Link to="/" className="nav-logo flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
-          <img src={logo} alt="Vogats CV Logo" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover" />
-          <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-text whitespace-nowrap">Vogats CV</span>
-        </Link>
-
-        {/* ── Same nav links as home page ── */}
-        <nav className="hidden items-center gap-8 text-sm md:flex">
-          <a href="/#features"   className="text-muted font-bold uppercase tracking-wider text-[10px] transition-colors hover:text-accent">Features</a>
-          <a href="/#templates"  className="text-muted font-bold uppercase tracking-wider text-[10px] transition-colors hover:text-accent">Templates</a>
-          <a href="/#pricing"    className="text-muted font-bold uppercase tracking-wider text-[10px] transition-colors hover:text-accent">Pricing</a>
-          <a href="/#faq"        className="text-muted font-bold uppercase tracking-wider text-[10px] transition-colors hover:text-accent">FAQ</a>
-        </nav>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden sm:flex items-center">
-            <ThemeToggle />
-          </div>
-          {subscription && (
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold uppercase tracking-wider text-accent">
-              <BadgeCheck className="h-3 w-3" /> {PLANS[subscription.planId].label} Plan
-            </div>
-          )}
-          <button 
-            onClick={() => signOut().then(() => nav({ to: "/" }))}
-            className="nav-btn hidden md:flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-muted hover:bg-soft hover:text-text transition-all text-sm"
-          >
-            <LogOut className="h-4 w-4" /> Sign Out
-          </button>
-          
-          <button 
-            className="md:hidden p-1.5 text-text hover:bg-muted/10 rounded-lg transition-colors flex-shrink-0"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[150] glass md:hidden flex flex-col items-center justify-center gap-8 animate-in fade-in zoom-in duration-300">
-          <div className="absolute top-6 right-6">
-            <button 
-              className="p-2 text-text hover:bg-muted/10 rounded-lg transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          
-          <ThemeToggle />
-          
-          <div className="flex flex-col items-center gap-6">
-            <a href="/#features"   className="text-2xl font-display font-bold text-text hover:text-accent" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
-            <a href="/#templates"  className="text-2xl font-display font-bold text-text hover:text-accent" onClick={() => setIsMobileMenuOpen(false)}>Templates</a>
-            <a href="/#pricing"    className="text-2xl font-display font-bold text-text hover:text-accent" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
-            <a href="/#faq"        className="text-2xl font-display font-bold text-text hover:text-accent" onClick={() => setIsMobileMenuOpen(false)}>FAQ</a>
-          </div>
-
-          <button 
-            onClick={() => { signOut().then(() => nav({ to: "/" })); setIsMobileMenuOpen(false); }}
-            className="flex items-center gap-2 px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-bold"
-          >
-            <LogOut className="h-5 w-5" /> Sign Out
-          </button>
-        </div>
-      )}
+    <div className="min-h-screen pt-12 sm:pt-20 pb-20 sm:pb-12 bg-bg text-text flex flex-col justify-between">
+      <Navbar />
 
       <main className="container mx-auto max-w-5xl px-6 py-10 relative z-10">
         {/* SUBSCRIPTION STATUS BANNER */}
@@ -512,6 +446,7 @@ function Dashboard() {
         userName={user?.displayName || profile?.displayName || ""}
         userEmail={user?.email || profile?.email || ""}
       />
+      <Footer />
     </div>
   );
 }
