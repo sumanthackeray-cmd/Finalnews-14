@@ -112,7 +112,7 @@ export function Navbar() {
                   />
                 </div>
                 <span className="font-display text-lg font-black tracking-tighter text-text">
-                  Vogats CV
+                  Vogats AI
                 </span>
               </div>
               <button
@@ -233,12 +233,12 @@ export function Navbar() {
               <div className="absolute -inset-2 bg-accent/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
               <img
                 src={logo}
-                alt="Vogats CV Logo"
+                alt="Vogats AI Logo"
                 className="relative w-5 h-5 sm:w-7 sm:h-7 rounded-sm sm:rounded-lg object-cover shadow-sm"
               />
             </div>
             <span className="font-display text-sm sm:text-lg font-black tracking-tighter text-text whitespace-nowrap">
-              Vogats CV
+              Vogats AI
             </span>
           </Link>
 

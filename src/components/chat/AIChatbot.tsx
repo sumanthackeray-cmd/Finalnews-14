@@ -30,7 +30,7 @@ export function AIChatbot() {
     {
       id: "initial-assistant",
       role: "assistant",
-      content: "Hi! I'm Vogi, your Vogats CV career companion. How can I help you build, optimize, or tailor your resume today?",
+      content: "Hi! I'm Vogats AI. How can I help you build, optimize, or tailor your resume today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -413,7 +413,6 @@ export function AIChatbot() {
               <img src={logo} alt="Vogats AI Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
               <div className="flex items-baseline gap-1">
                 <h3 className="font-display font-black text-[10px] md:text-[13px] text-text leading-none">Vogats AI</h3>
-                <span className="hidden md:inline text-[7px] text-muted font-black uppercase tracking-widest leading-none">Career Co-Pilot</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5">

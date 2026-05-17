@@ -90,7 +90,7 @@ function AboutPage() {
             Building the future of <span className="text-gradient">career growth</span>
           </h1>
           <p className="text-muted font-medium text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-            Vogats CV was born from a simple belief: every professional deserves an AI-powered career co-pilot that helps them land their dream job faster.
+            Vogats AI was born from a simple belief: every professional deserves a state-of-the-art AI-powered platform that helps them land their dream job faster.
           </p>
         </div>
       </section>
