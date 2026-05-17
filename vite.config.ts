@@ -13,6 +13,51 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    // Production optimized config
+    plugins: [
+      {
+        name: 'local-api-downloader',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/api/download' && req.method === 'POST') {
+              let body = '';
+              req.on('data', chunk => {
+                body += chunk;
+              });
+              req.on('end', () => {
+                try {
+                  const params = new URLSearchParams(body);
+                  const base64 = params.get('base64');
+                  const filename = params.get('filename');
+                  const mimeType = params.get('mimeType');
+
+                  if (!base64 || !filename) {
+                    res.statusCode = 400;
+                    res.end(JSON.stringify({ error: "Missing required fields" }));
+                    return;
+                  }
+
+                  const buffer = Buffer.from(base64, 'base64');
+                  
+                  let finalMime = mimeType || "application/octet-stream";
+                  if (filename.endsWith(".pdf")) finalMime = "application/pdf";
+                  if (filename.endsWith(".docx")) finalMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                  if (filename.endsWith(".txt")) finalMime = "text/plain";
+
+                  res.setHeader("Content-Type", finalMime);
+                  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+                  res.setHeader("Content-Length", buffer.length);
+                  res.end(buffer);
+                } catch (err: any) {
+                  res.statusCode = 500;
+                  res.end(JSON.stringify({ error: err.message }));
+                }
+              });
+            } else {
+              next();
+            }
+          });
+        }
+      }
+    ]
   },
 });
