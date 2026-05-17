@@ -210,7 +210,7 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
                     display: "inline-block",
                   }} />
                   <span style={{ color: "#f59e0b", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em" }}>
-                    🔒 SECURE CHECKOUT VIA CASHFREE
+                    🔒 SECURE CHECKOUT VIA RAZORPAY
                   </span>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
                   letterSpacing: "0.15em", fontWeight: 700,
                   textTransform: "uppercase", marginBottom: 14,
                 }}>
-                  INSTANT ACTIVATION &nbsp;·&nbsp; SECURE CHECKOUT VIA CASHFREE
+                  INSTANT ACTIVATION &nbsp;·&nbsp; SECURE CHECKOUT VIA RAZORPAY
                 </p>
                 <PaymentBadges />
               </div>

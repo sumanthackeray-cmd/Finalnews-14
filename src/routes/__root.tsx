@@ -16,10 +16,6 @@ export const Route = createRootRoute({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "preconnect", href: "https://sdk.cashfree.com" },
-    ],
-    scripts: [
-      { src: "https://sdk.cashfree.com/js/v3/cashfree.js", async: true }
     ]
   }),
   component: RootComponent,

@@ -345,7 +345,7 @@ function RefundPage() {
             <ul className="space-y-2 mt-2">
               <Check color="green">Contact support first — disputes typically resolved within 24 hours</Check>
               <Check color="green">You have the right to escalate to your payment provider if unresolved</Check>
-              <Check color="red">Fraudulent chargebacks may result in account suspension and referral to Stripe/Cashfree</Check>
+              <Check color="red">Fraudulent chargebacks may result in account suspension and referral to Stripe/Razorpay</Check>
             </ul>
             <InfoBox type="blue">We are a small team and every refund is personally reviewed. Please reach out before escalating — we genuinely want to make things right.</InfoBox>
           </Section>

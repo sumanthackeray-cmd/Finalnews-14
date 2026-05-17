@@ -25,7 +25,6 @@ export const Route = createFileRoute("/dashboard")({
     return {
       template: (search.template as string) || undefined,
       buy: (search.buy as PlanId) || undefined,
-      order_id: (search.order_id as string) || undefined,
     };
   },
   component: Dashboard,
@@ -37,7 +36,7 @@ type ProfileData = { displayName: string; email: string; photoURL?: string; crea
 function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const nav = useNavigate();
-  const { template: autoCreateTemplate, buy: autoBuyPlan, order_id } = Route.useSearch();
+  const { template: autoCreateTemplate, buy: autoBuyPlan } = Route.useSearch();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -161,47 +160,6 @@ function Dashboard() {
     if (user) load();
   }, [user, load]);
 
-  useEffect(() => {
-    if (order_id && user && !busy) {
-      (async () => {
-        setBusy(true);
-        try {
-          // Use our new server-side verify-order API route
-          const res = await fetch(`/api/verify-order?order_id=${encodeURIComponent(order_id)}`);
-          const result = await res.json();
-
-          if (result.order_status === "PAID") {
-            // Extract planId from order_id (format: VOGATS_PLANID_timestamp_rand)
-            const parts = order_id.split("_");
-            // Try index 1 (VOGATS_PRO_... format) then fallback to last part
-            const rawPlan = parts[1] as PlanId;
-            const planId: PlanId = PLANS[rawPlan] ? rawPlan : (parts[parts.length - 1] as PlanId);
-
-            if (!PLANS[planId]) throw new Error("Could not determine plan from order.");
-
-            const sub = createSubscription(planId, order_id);
-            await saveSubscription(user.uid, sub);
-            setSubscription(sub);
-
-            toast.success("🎉 Payment Successful!", {
-              description: `Your ${PLANS[planId].label} plan is now active.`
-            });
-          } else {
-            toast.error("Payment Verification Failed", {
-              description: "We couldn't confirm your payment. Contact support if you were charged."
-            });
-          }
-        } catch (e: any) {
-          console.error("Verification error:", e);
-          toast.error("Error verifying payment", { description: e.message });
-        } finally {
-          setBusy(false);
-          nav({ to: "/dashboard", search: { order_id: undefined }, replace: true });
-        }
-      })();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order_id, user]);
   const del = async (id: string) => {
     try {
       await deleteDoc(doc(db, "resumes", id));
