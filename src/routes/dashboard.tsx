@@ -206,6 +206,11 @@ function Dashboard() {
   const access = checkAccess(subscription);
   const remainingDays = subscription ? Math.max(0, Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : 0;
 
+  const used = profile?.downloadCount ?? subscription?.resumesUsed ?? 0;
+  const limit = subscription?.resumeLimit ?? 49;
+  const isUnlimited = subscription?.unlimited ?? false;
+  const strokeDashoffset = isUnlimited ? 0 : 131.95 - (Math.min(used, limit) / (limit || 1)) * 131.95;
+
   return (
     <div className="min-h-screen pt-12 sm:pt-20 pb-20 sm:pb-12 bg-bg text-text flex flex-col justify-between">
       <Navbar />
@@ -220,9 +225,9 @@ function Dashboard() {
           {/* Decorative shapes */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-3xl -mr-10 -mt-10" />
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div className="flex items-center gap-5">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
                 access.allowed ? "bg-accent/20 text-accent" : "bg-red-500/20 text-red-400"
               }`}>
                 {access.allowed ? <BadgeCheck className="h-7 w-7" /> : <AlertCircle className="h-7 w-7" />}
@@ -241,22 +246,53 @@ function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-stretch lg:items-center gap-5 w-full lg:w-auto shrink-0">
               {access.allowed && (
-                <div className="flex items-center gap-6 px-6 border-r border-border/50 hidden lg:flex">
-                  <div className="text-center">
-                    <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Used</div>
-                    <div className="text-lg font-bold">{subscription?.resumesUsed}</div>
+                <div className="flex items-center gap-4.5 bg-card/60 dark:bg-card/40 border border-border/40 rounded-2xl p-3.5 px-4.5 shadow-sm w-full sm:w-auto shrink-0 transition-all hover:border-accent/30 hover:shadow-md">
+                  <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="28"
+                        cy="28"
+                        r="21"
+                        className="stroke-border/40 dark:stroke-border/20 fill-none"
+                        strokeWidth="4"
+                      />
+                      <circle
+                        cx="28"
+                        cy="28"
+                        r="21"
+                        className="stroke-accent fill-none transition-all duration-700 ease-out"
+                        strokeWidth="4"
+                        strokeDasharray={131.95}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        style={{
+                          filter: "drop-shadow(0 0 3px rgba(var(--accent-rgb), 0.25))"
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xs font-black font-display leading-none">{used}</span>
+                      <span className="text-[7px] text-muted font-black uppercase tracking-wider mt-0.5">used</span>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Limit</div>
-                    <div className="text-lg font-bold">{subscription?.unlimited ? <InfinityIcon className="h-5 w-5 mx-auto" /> : subscription?.resumeLimit}</div>
+                  <div className="text-left select-none">
+                    <div className="text-[9px] font-black text-muted uppercase tracking-widest leading-none">Downloads Limit</div>
+                    <div className="text-sm font-black mt-1.5 flex items-center gap-1 font-display">
+                      <span>{used}</span>
+                      <span className="text-muted/60 font-medium">/</span>
+                      <span>{isUnlimited ? <InfinityIcon className="h-3.5 w-3.5 inline-block text-accent" /> : limit}</span>
+                    </div>
+                    <div className="text-[9px] text-muted mt-1 leading-none">
+                      {isUnlimited ? "Unlimited access active" : `${Math.max(0, limit - used)} downloads remaining`}
+                    </div>
                   </div>
                 </div>
               )}
               <button 
                 onClick={() => setShowPlanModal(true)}
-                className="btn-premium px-8 py-3 text-sm"
+                className="btn-premium px-8 py-3 text-sm w-full sm:w-auto shrink-0 flex items-center justify-center"
               >
                 {access.allowed ? "Change Plan" : "Upgrade Now"}
               </button>
