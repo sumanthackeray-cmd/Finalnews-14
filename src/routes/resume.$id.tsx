@@ -1486,7 +1486,7 @@ function Builder() {
   );
 }
 
-function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }: { data: ResumeData; clText: string; clCompany?: string; clRole?: string; clSignature?: string }) {
+function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, clRole, clSignature }: { template?: string; data: ResumeData; clText: string; clCompany?: string; clRole?: string; clSignature?: string }) {
   // Extract paragraphs
   const paragraphs = clText.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
 
@@ -1501,81 +1501,256 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
     ? data.skills.slice(0, 4).map(s => { const skill = s as any; return { name: skill.name || skill, level: skill.level || 85 }; }) 
     : fallbackSkills;
 
-  return (
-    <div style={{
-      width: "820px",
-      height: "1160px",
-      backgroundColor: "#ffffff",
-      position: "relative",
-      overflow: "hidden",
-      fontFamily: "'Inter', 'Roboto', 'Outfit', sans-serif"
-    }}>
-      {/* 1. Diagonal Header SVG Shapes */}
-      <svg 
-        viewBox="0 0 820 280" 
-        style={{ 
-          position: "absolute", 
-          top: 0, 
-          left: 0, 
-          width: "820px", 
-          height: "280px", 
-          zIndex: 1, 
-          pointerEvents: "none" 
-        }}
-      >
-        {/* Peach diagonal right shape */}
-        <polygon points="290,0 820,0 820,160 290,80" fill="#fbc4b6" />
-        {/* Dark Charcoal left shape */}
-        <polygon points="0,0 290,0 290,190 0,250" fill="#4d4d4d" />
-      </svg>
-
-      {/* 2. Portrait circular photo frame overlapping the boundary */}
-      <div 
-        style={{ 
-          position: "absolute", 
-          left: "65px", 
-          top: "85px", 
-          width: "160px", 
-          height: "160px", 
-          borderRadius: "50%", 
-          border: "6px solid #fbc4b6", 
-          boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
-          overflow: "hidden",
-          zIndex: 10,
-          backgroundColor: "#ffffff"
-        }}
-      >
-        {isValidPhoto(data.basics.photo) ? (
-          <img src={data.basics.photo} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400 font-bold text-xs uppercase">
-            PHOTO
-          </div>
-        )}
-      </div>
-
-      {/* 3. Left Sidebar Column */}
+  if (template === "classic") {
+    return (
       <div style={{
-        position: "absolute",
-        left: 0,
-        top: 0,
-        width: "290px",
+        width: "820px",
         height: "1160px",
-        backgroundColor: "#f4f5f7",
-        padding: "270px 28px 40px 28px",
+        backgroundColor: "#ffffff",
+        padding: "60px 70px",
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: "'Times New Roman', Times, serif",
+        color: "#1a1a1a",
         display: "flex",
         flexDirection: "column",
-        gap: "28px"
+        justifyContent: "space-between"
       }}>
+        {/* Header (Classic Centered) */}
+        <header style={{ textAlign: "center", borderBottom: "1px solid #1a1a1a", paddingBottom: "12px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>
+            {data.basics.name || "Your Name"}
+          </h1>
+          <p style={{ fontSize: "13px", fontStyle: "italic", color: "#444", marginTop: "4px", margin: 0 }}>
+            {data.basics.title || "Career Professional"}
+          </p>
+          <p style={{ fontSize: "10.5px", color: "#555", marginTop: "8px", margin: 0 }}>
+            {[data.basics.email, data.basics.phone, data.basics.location, data.basics.website].filter(Boolean).join("  •  ")}
+          </p>
+        </header>
+
+        {/* Content */}
+        <div style={{ flex: 1, marginTop: "40px", display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Date & Recipient */}
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11.5px", color: "#333" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontWeight: "700" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
+              <span>{clRole || "Senior Manager"}</span>
+              <span>{clCompany || "Target Company"}</span>
+            </div>
+            <span style={{ fontWeight: "700" }}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+          </div>
+
+          {/* Greeting */}
+          <p style={{ fontSize: "12.5px", fontWeight: "700", margin: "10px 0 5px 0" }}>
+            Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
+          </p>
+
+          {/* Letter Body */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {paragraphs.map((p, i) => (
+              <p key={i} style={{ fontSize: "11.5px", lineHeight: "1.7", textAlign: "justify", margin: 0 }}>
+                {p}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        {/* Closing & Signature */}
+        <footer style={{ borderTop: "1px solid #1a1a1a", paddingTop: "15px", marginTop: "20px" }}>
+          <p style={{ fontSize: "11.5px", margin: 0 }}>Sincerely yours,</p>
+          {clSignature ? (
+            <img src={clSignature} alt="Signature" style={{ maxHeight: "40px", maxWidth: "160px", margin: "6px 0", objectFit: "contain" }} />
+          ) : (
+            <div style={{ height: "24px" }} />
+          )}
+          <p style={{ fontSize: "12px", fontWeight: "700", margin: 0 }}>{data.basics.name}</p>
+          <p style={{ fontSize: "10px", color: "#666", margin: 0 }}>{data.basics.title}</p>
+        </footer>
+      </div>
+    );
+  }
+
+  if (template === "modern" || template === "minimal") {
+    const isMin = template === "minimal";
+    return (
+      <div style={{
+        width: "820px",
+        height: "1160px",
+        backgroundColor: "#ffffff",
+        padding: isMin ? "70px 80px" : "60px 65px",
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: "'Inter', sans-serif",
+        color: "#111",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between"
+      }}>
+        {/* Header */}
+        <header style={{ borderBottom: isMin ? "none" : "2px solid #111", paddingBottom: isMin ? "0" : "16px" }}>
+          <h1 style={{ 
+            fontSize: isMin ? "38px" : "32px", 
+            fontWeight: isMin ? "300" : "800", 
+            letterSpacing: "-0.5px",
+            fontFamily: "'Fraunces', Georgia, serif",
+            margin: 0 
+          }}>
+            {data.basics.name || "Your Name"}
+          </h1>
+          <p style={{ fontSize: "13px", color: "#444", marginTop: "4px", margin: 0 }}>
+            {data.basics.title}
+          </p>
+          <div style={{ display: "flex", gap: "16px", marginTop: "12px", fontSize: "10.5px", color: "#555" }}>
+            {data.basics.email && <span>{data.basics.email}</span>}
+            {data.basics.phone && <span>· {data.basics.phone}</span>}
+            {data.basics.location && <span>· {data.basics.location}</span>}
+            {data.basics.website && <span>· {data.basics.website}</span>}
+          </div>
+        </header>
+
+        {/* Content */}
+        <div style={{ flex: 1, marginTop: isMin ? "50px" : "35px", display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Recipient & Date */}
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#555" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontWeight: "700", color: "#111" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
+              <span>{clRole || "Senior Manager"}</span>
+              <span>{clCompany || "Target Company"}</span>
+            </div>
+            <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+          </div>
+
+          <p style={{ fontSize: "13px", fontWeight: "700", color: "#111", margin: "10px 0 0 0" }}>
+            Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {paragraphs.map((p, i) => (
+              <p key={i} style={{ fontSize: "11px", lineHeight: "1.65", color: "#222", textAlign: "justify", margin: 0 }}>
+                {p}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer style={{ borderTop: "1.5px solid #eaeaea", paddingTop: "20px" }}>
+          <p style={{ fontSize: "11px", color: "#666", margin: 0 }}>Sincerely,</p>
+          {clSignature ? (
+            <img src={clSignature} alt="Signature" style={{ maxHeight: "36px", maxWidth: "150px", margin: "8px 0", objectFit: "contain" }} />
+          ) : (
+            <div style={{ height: "24px" }} />
+          )}
+          <p style={{ fontSize: "12px", fontWeight: "700", margin: 0 }}>{data.basics.name}</p>
+          <p style={{ fontSize: "10px", color: "#666", margin: 0 }}>{data.basics.title}</p>
+        </footer>
+      </div>
+    );
+  }
+
+  // Split-screen Layout Templates
+  let sidebarBg = "#f4f5f7";
+  let sidebarWidth = "290px";
+  let mainWidth = "530px";
+  let leftColIsSidebar = true;
+  let fontTheme = "'Inter', sans-serif";
+  let accentColor = "#fbc4b6";
+  let darkColor = "#1e293b";
+  let accentText = "#fbc4b6";
+  let textOnSidebar = "#475569";
+  let isSplit = true;
+
+  if (template === "creative") {
+    sidebarBg = "#1a1a2e";
+    textOnSidebar = "rgba(255,255,255,0.75)";
+    accentColor = "#ff7e5f";
+    accentText = "#ff7e5f";
+    darkColor = "#ffffff";
+  } else if (template === "designer") {
+    sidebarBg = "#fbf3ec"; // CREAM
+    accentColor = "#c89679"; // TAN
+    darkColor = "#3a2418"; // DARK BROWN
+    accentText = "#c89679";
+    textOnSidebar = "#3a2418";
+  } else if (template === "watson") {
+    sidebarBg = "#3b4cb6";
+    textOnSidebar = "rgba(255,255,255,0.85)";
+    accentColor = "#a7b1e8";
+    accentText = "#3b4cb6";
+    darkColor = "#ffffff";
+  } else if (template === "turquoise") {
+    sidebarBg = "#3ba7c4";
+    textOnSidebar = "rgba(255,255,255,0.9)";
+    accentColor = "#ffffff";
+    accentText = "#1c6075";
+    darkColor = "#ffffff";
+  } else if (template === "sophia") {
+    leftColIsSidebar = false;
+    sidebarBg = "#d9b84a"; // MUSTARD
+    accentColor = "#d9b84a";
+    accentText = "#d9b84a";
+    darkColor = "#ffffff";
+    textOnSidebar = "rgba(255,255,255,0.9)";
+    sidebarWidth = "285px";
+    mainWidth = "535px";
+  } else if (template === "saurabh") {
+    leftColIsSidebar = false;
+    sidebarBg = "#46a2c1"; // OCEAN BLUE
+    accentColor = "#46a2c1";
+    accentText = "#1c6075";
+    darkColor = "#ffffff";
+    textOnSidebar = "rgba(255,255,255,0.9)";
+    sidebarWidth = "295px";
+    mainWidth = "525px";
+  } else if (template === "avery") {
+    isSplit = false;
+  }
+
+  if (isSplit) {
+    const sidebarJSX = (
+      <div style={{
+        width: sidebarWidth,
+        height: "1160px",
+        backgroundColor: sidebarBg,
+        padding: "80px 24px 40px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "28px",
+        color: textOnSidebar,
+        fontFamily: fontTheme
+      }}>
+        {/* Photo Container */}
+        <div style={{
+          width: "140px",
+          height: "140px",
+          borderRadius: template === "designer" || template === "saurabh" ? "8px" : "50%",
+          border: `5px solid ${accentColor}`,
+          boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+          overflow: "hidden",
+          margin: "0 auto 10px auto",
+          backgroundColor: "#ffffff",
+          flexShrink: 0
+        }}>
+          {isValidPhoto(data.basics.photo) ? (
+            <img src={data.basics.photo} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 font-bold text-[10px] uppercase">
+              PHOTO
+            </div>
+          )}
+        </div>
+
         {/* Name and Professional Title */}
-        <div>
+        <div style={{ textAlign: "center" }}>
           <h1 style={{
-            fontSize: "22px",
+            fontSize: "20px",
             fontWeight: "800",
-            letterSpacing: "0.05em",
-            color: "#1e293b",
+            letterSpacing: "0.03em",
+            color: darkColor,
             textTransform: "uppercase",
-            lineHeight: "1.2"
+            lineHeight: "1.25",
+            margin: 0
           }}>
             {data.basics.name || "Katie Slater"}
           </h1>
@@ -1583,145 +1758,77 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
             fontSize: "11px",
             fontWeight: "600",
             letterSpacing: "0.1em",
-            color: "#fbc4b6",
+            color: template === "creative" || template === "designer" ? accentColor : (template === "watson" ? "#a7b1e8" : darkColor),
             textTransform: "uppercase",
-            marginTop: "6px"
+            marginTop: "6px",
+            margin: 0
           }}>
             {data.basics.title || "Digital Marketing"}
           </p>
           <div style={{
-            width: "50px",
-            height: "2.5px",
-            backgroundColor: "#fbc4b6",
-            marginTop: "16px"
+            width: "40px",
+            height: "2px",
+            backgroundColor: accentColor,
+            margin: "12px auto 0 auto"
           }} />
         </div>
 
-        {/* WHO AM I Section */}
+        {/* Info Block */}
         <div>
           <h3 style={{
-            fontSize: "13px",
+            fontSize: "12px",
             fontWeight: "800",
             letterSpacing: "0.05em",
-            color: "#0f172a",
-            textTransform: "uppercase"
+            color: darkColor,
+            textTransform: "uppercase",
+            margin: "0 0 10px 0"
           }}>
-            Who Am I
+            Contact Info
           </h3>
-          <p style={{
-            fontSize: "10.5px",
-            lineHeight: "1.6",
-            color: "#475569",
-            marginTop: "10px",
-            textAlign: "justify"
-          }}>
-            {data.basics.summary || "A highly motivated and strategic professional with extensive background in building systems, driving growth, and leading successful teams."}
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "10.5px" }}>
+            {data.basics.phone && <p style={{ margin: 0 }}>☎ &nbsp; {data.basics.phone}</p>}
+            {data.basics.email && <p style={{ margin: 0, wordBreak: "break-all" }}>✉ &nbsp; {data.basics.email}</p>}
+            {data.basics.location && <p style={{ margin: 0 }}>📍 &nbsp; {data.basics.location}</p>}
+          </div>
         </div>
 
-        {/* SKILLS Section */}
+        {/* Skills Block */}
         <div>
           <h3 style={{
-            fontSize: "13px",
+            fontSize: "12px",
             fontWeight: "800",
             letterSpacing: "0.05em",
-            color: "#0f172a",
-            textTransform: "uppercase"
+            color: darkColor,
+            textTransform: "uppercase",
+            margin: "0 0 10px 0"
           }}>
-            Skills
+            Key Skills
           </h3>
-          <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
-            {skillsToRender.map((skill, index) => (
-              <div key={index}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", fontWeight: "600", color: "#475569" }}>
-                  <span>{skill.name}</span>
-                </div>
-                <div style={{
-                  height: "8px",
-                  backgroundColor: "#e2e8f0",
-                  borderRadius: "4px",
-                  marginTop: "4px",
-                  overflow: "hidden"
-                }}>
-                  <div style={{
-                    width: `${skill.level}%`,
-                    height: "100%",
-                    backgroundColor: "#fbc4b6",
-                    borderRadius: "4px"
-                  }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {skillsToRender.map((s, idx) => (
+              <div key={idx}>
+                <span style={{ fontSize: "10px", fontWeight: "600" }}>{s.name}</span>
+                <div style={{ height: "4px", backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "2px", marginTop: "3px" }}>
+                  <div style={{ width: `${s.level}%`, height: "100%", backgroundColor: accentColor, borderRadius: "2px" }} />
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* CONTACT Section */}
-        <div>
-          <h3 style={{
-            fontSize: "13px",
-            fontWeight: "800",
-            letterSpacing: "0.05em",
-            color: "#0f172a",
-            textTransform: "uppercase"
-          }}>
-            Contact
-          </h3>
-          <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "10px", color: "#475569" }}>
-            {/* Phone */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <svg style={{ width: "12px", height: "12px", fill: "currentColor" }} viewBox="0 0 24 24">
-                <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z" />
-              </svg>
-              <span>{data.basics.phone || "+03 123 456 789"}</span>
-            </div>
-            {/* Email */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <svg style={{ width: "12px", height: "12px", fill: "currentColor" }} viewBox="0 0 24 24">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-              </svg>
-              <span style={{ wordBreak: "break-all" }}>{data.basics.email || "yourname@domain.com"}</span>
-            </div>
-            {/* Website */}
-            {(data.basics as any).url && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <svg style={{ width: "12px", height: "12px", fill: "none", stroke: "currentColor", strokeWidth: 2 }} viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-                <span>{(data.basics as any).url}</span>
-              </div>
-            )}
-            {/* Location */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <svg style={{ width: "12px", height: "12px", fill: "currentColor" }} viewBox="0 0 24 24">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-              </svg>
-              <span>
-                {data.basics.location 
-                  ? [
-                      (data.basics.location as any).address,
-                      (data.basics.location as any).city,
-                      (data.basics.location as any).country
-                    ].filter(Boolean).join(", ") 
-                  : "3553 Blackwell Street, Taksokk"}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
+    );
 
-      {/* 4. Right Main Column (Cover Letter Text Area) */}
+    const mainJSX = (
       <div style={{
-        position: "absolute",
-        left: "290px",
-        top: 0,
-        width: "530px",
+        width: mainWidth,
         height: "1160px",
         backgroundColor: "#ffffff",
-        padding: "240px 44px 40px 44px",
+        padding: "80px 40px 40px 40px",
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
+        fontFamily: fontTheme
       }}>
-        {/* Recipient Details & Date Header Block */}
+        {/* Recipient details */}
         <div style={{
           display: "flex",
           justifyContent: "space-between",
@@ -1730,16 +1837,13 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
           color: "#475569",
           marginTop: "16px"
         }}>
-          {/* Recipient details (left aligned) */}
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             <span style={{ fontWeight: "700", color: "#1e293b" }}>
               {clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}
             </span>
             <span>{clRole || "Senior Manager"}</span>
             <span>{clCompany || "Target Company"}</span>
-            {clCompany && <span style={{ opacity: 0.8 }}>Corporate Office</span>}
           </div>
-          {/* Date (right aligned) */}
           <span style={{ fontWeight: "700", color: "#1e293b" }}>
             {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </span>
@@ -1756,7 +1860,7 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
           Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
         </div>
 
-        {/* Cover Letter Body Text */}
+        {/* Letter content */}
         <div style={{
           flex: 1,
           display: "flex",
@@ -1776,14 +1880,13 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
           ))}
         </div>
 
-        {/* Signature & Sign-off Section */}
+        {/* Signature */}
         <div style={{
           marginTop: "auto",
           paddingTop: "20px",
           borderTop: "1px solid #f1f5f9"
         }}>
           <span style={{ fontSize: "11px", color: "#475569" }}>Sincerely Yours,</span>
-          {/* Renders uploaded digital signature image only if present, hiding dummy signature entirely */}
           {clSignature ? (
             <div style={{ margin: "6px 0", display: "block" }}>
               <img src={clSignature} alt="Signature" style={{ maxHeight: "40px", maxWidth: "160px", objectFit: "contain" }} />
@@ -1791,14 +1894,142 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
           ) : (
             <div style={{ height: "20px" }} />
           )}
-          {/* Name and Professional Title */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
             <span style={{ fontSize: "11.5px", fontWeight: "700", color: "#1e293b" }}>
               {data.basics.name || "Katie Slater"}
             </span>
-            <span style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", fontWeight: "500" }}>
+            <span style={{ fontSize: "10px", color: accentText, textTransform: "uppercase", fontWeight: "600" }}>
               {data.basics.title || "Digital Marketing"}
             </span>
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div style={{
+        width: "820px",
+        height: "1160px",
+        backgroundColor: "#ffffff",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex"
+      }}>
+        {leftColIsSidebar ? (
+          <>
+            {sidebarJSX}
+            {mainJSX}
+          </>
+        ) : (
+          <>
+            {mainJSX}
+            {sidebarJSX}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Avery Style (avery) Layout
+  const ORANGE = "#f59121";
+  return (
+    <div style={{
+      width: "820px",
+      height: "1160px",
+      backgroundColor: "#ffffff",
+      position: "relative",
+      overflow: "hidden",
+      fontFamily: "'Inter', sans-serif",
+      color: "#1a1a1a"
+    }}>
+      {/* Decorative circles */}
+      <div style={{ position: "absolute", top: "-40px", left: "-40px", width: "160px", height: "160px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
+      <div style={{ position: "absolute", top: "64px", left: "176px", width: "96px", height: "96px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
+      <div style={{ position: "absolute", top: "-64px", right: "40px", width: "224px", height: "224px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
+      <div style={{ position: "absolute", bottom: "-64px", right: "24px", width: "176px", height: "176px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
+
+      <div style={{ position: "relative", padding: "50px 60px", zIndex: 10, display: "flex", flexDirection: "column", height: "1160px" }}>
+        {/* Header */}
+        <div style={{ display: "flex", gap: "32px", alignItems: "flex-end" }}>
+          <div style={{ width: "130px", height: "130px", borderRadius: "50%", border: "4px solid #eaeaea", overflow: "hidden", backgroundColor: "#fff", flexShrink: 0 }}>
+            {isValidPhoto(data.basics.photo) ? (
+              <img src={data.basics.photo} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gray-300" />
+            )}
+          </div>
+          <div style={{ flex: 1, paddingBottom: "8px" }}>
+            <h1 style={{ fontSize: "32px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "-0.5px", margin: 0 }}>
+              {data.basics.name || "Your Name"}
+            </h1>
+            <p style={{ fontSize: "18px", fontWeight: "900", color: ORANGE, textTransform: "uppercase", marginTop: "4px", margin: 0 }}>
+              {data.basics.title}
+            </p>
+            <div style={{ borderBottom: "2.5px solid black", marginTop: "12px" }} />
+          </div>
+        </div>
+
+        {/* Content columns */}
+        <div style={{ display: "grid", gridTemplateColumns: "35% 65%", gap: "32px", flex: 1, marginTop: "40px" }}>
+          {/* Left info column */}
+          <div>
+            <h2 style={{ fontSize: "16px", fontWeight: "900", textDecoration: "underline", textUnderlineOffset: "4px", marginBottom: "16px", margin: 0 }}>
+              Contact Details
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "11px", color: "#333" }}>
+              {data.basics.phone && <p style={{ margin: 0 }}>☎ &nbsp; {data.basics.phone}</p>}
+              {data.basics.email && <p style={{ margin: 0, wordBreak: "break-all" }}>✉ &nbsp; {data.basics.email}</p>}
+              {data.basics.location && <p style={{ margin: 0 }}>📍 &nbsp; {data.basics.location}</p>}
+            </div>
+
+            <h2 style={{ fontSize: "16px", fontWeight: "900", textDecoration: "underline", textUnderlineOffset: "4px", marginTop: "32px", marginBottom: "16px", margin: 0 }}>
+              Top Skills
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {skillsToRender.map((s, i) => (
+                <div key={i} style={{ fontSize: "11px", display: "flex", gap: "6px" }}>
+                  <span>•</span><span>{s.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right letter body column */}
+          <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#555" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontWeight: "900", color: "#111" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
+                <span>{clRole || "Senior Manager"}</span>
+                <span>{clCompany || "Target Company"}</span>
+              </div>
+              <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+
+            <p style={{ fontSize: "13px", fontWeight: "900", color: "#111", margin: "24px 0 16px 0" }}>
+              Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
+            </p>
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
+              {paragraphs.map((p, i) => (
+                <p key={i} style={{ fontSize: "11px", lineHeight: "1.65", color: "#333", textAlign: "justify", margin: 0 }}>
+                  {p}
+                </p>
+              ))}
+            </div>
+
+            {/* Signature */}
+            <div style={{ paddingTop: "20px", borderTop: "1.5px solid #eaeaea", marginTop: "auto" }}>
+              <span style={{ fontSize: "11px", color: "#555" }}>Sincerely Yours,</span>
+              {clSignature ? (
+                <div style={{ margin: "6px 0" }}>
+                  <img src={clSignature} alt="Signature" style={{ maxHeight: "36px", maxWidth: "150px", objectFit: "contain" }} />
+                </div>
+              ) : (
+                <div style={{ height: "24px" }} />
+              )}
+              <p style={{ fontSize: "12px", fontWeight: "900", margin: 0 }}>{data.basics.name}</p>
+              <p style={{ fontSize: "10px", color: ORANGE, fontWeight: "900", textTransform: "uppercase", margin: 0 }}>{data.basics.title}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1872,7 +2103,7 @@ function ResponsivePreview({ template, data, clText, clCompany, clRole, clSignat
               position: "relative"
             }}
           >
-            <CoverLetterPagePreview data={data} clText={clText} clCompany={clCompany} clRole={clRole} clSignature={clSignature} />
+            <CoverLetterPagePreview template={template} data={data} clText={clText} clCompany={clCompany} clRole={clRole} clSignature={clSignature} />
           </div>
         </div>
       )}
