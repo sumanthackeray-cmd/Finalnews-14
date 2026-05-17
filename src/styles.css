@@ -32,8 +32,16 @@
   --muted-foreground: 215.4 16.3% 46.9%;
   --accent-foreground: 222 47% 11%;
   --card-foreground: 222 47% 11%;
+  /* Popover: fully opaque white in light mode */
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
+  /* Sidebar tokens — light mode */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-ring: #6366f1;
 }
 
 .dark {
@@ -56,8 +64,19 @@
   --foreground: 210 40% 98%;
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
-  --card: 222.2 84% 4.9%;
-  --popover: 222.2 84% 4.9%;
+  /* Card: solid dark surface, NOT transparent */
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  /* Popover: solid elevated dark surface in dark mode */
+  --popover: 220 40% 10%;
+  --popover-foreground: 210 40% 98%;
+  /* Sidebar tokens — dark mode */
+  --sidebar: #111827;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-border: #1f2937;
+  --sidebar-accent: #1f2937;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-ring: #818cf8;
 }
 
 /* ─── GLOBAL OVERRIDES ─── */
@@ -68,6 +87,96 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   transition: background 0.3s, color 0.3s;
+}
+
+/* ─── POPUP / POPOVER / DROPDOWN / DIALOG / SHEET — SOLID BACKGROUNDS ─── */
+/*
+  Ensures ALL floating overlay UI elements (sidebar toggles, dropdowns,
+  popovers, dialogs, sheets, AI chat window, command palettes) are fully
+  opaque and have legible content in BOTH light and dark mode.
+  No backdrop-filter glass or transparency that makes text hard to read.
+*/
+
+/* Radix / Shadcn popover, dropdown, context-menu, menubar, select, tooltip */
+[data-radix-popper-content-wrapper] > *,
+[role="dialog"],
+[role="menu"],
+[role="listbox"],
+[role="tooltip"],
+[cmdk-root],
+[data-state="open"][class*="Content"],
+[data-state="open"][class*="content"] {
+  background-color: hsl(var(--popover)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Sheet (slide-in panels used for mobile sidebar and checkout) */
+[data-radix-dialog-content],
+[class*="SheetContent"] {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Sidebar tokens — used by bg-sidebar Tailwind utility */
+.bg-sidebar {
+  background-color: var(--sidebar) !important;
+  color: var(--sidebar-foreground) !important;
+}
+
+/* AI Chatbot window — remove any accidental glass/transparency */
+[class*="AIChatbot"],
+.vogats-ai-window {
+  background-color: var(--bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* AI chat textarea — respect dark mode text */
+.chat-textarea,
+.ai-chat-form textarea {
+  color: var(--text) !important;
+  background-color: transparent !important;
+}
+
+/* Dark mode: popover items must be readable */
+.dark [data-radix-popper-content-wrapper] > *,
+.dark [role="dialog"],
+.dark [role="menu"],
+.dark [role="listbox"],
+.dark [cmdk-root] {
+  background-color: hsl(220 40% 10%) !important;
+  color: #f9fafb !important;
+  border-color: #1f2937 !important;
+}
+
+/* Dark mode: dropdown/select/popover items hover state */
+.dark [role="option"]:hover,
+.dark [role="menuitem"]:hover,
+.dark [data-highlighted] {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+/* Dark mode: sheet/dialog solid panel */
+.dark [data-radix-dialog-content],
+.dark [class*="SheetContent"] {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  border-color: #1f2937 !important;
+}
+
+/* Fix chat input box in dark mode */
+.dark .ai-chat-input-wrapper {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+.dark .ai-chat-input-wrapper textarea {
+  color: var(--text) !important;
 }
 
 /* ─── NOISE OVERLAY ─── */

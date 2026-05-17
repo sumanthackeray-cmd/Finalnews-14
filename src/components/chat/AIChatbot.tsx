@@ -403,7 +403,7 @@ export function AIChatbot() {
         <div className="p-4 bg-card border-t border-border shrink-0">
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="flex items-center gap-2 px-3.5 py-2.5 bg-white border-[1.5px] border-[#e2e8f0] rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/5 transition-all min-h-[48px] max-h-[180px]"
+            className="ai-chat-input-wrapper flex items-center gap-2 px-3.5 py-2.5 bg-[var(--surface)] border-[1.5px] border-[var(--border)] rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] focus-within:border-[var(--accent)] focus-within:ring-4 focus-within:ring-[var(--accent)]/5 transition-all min-h-[48px] max-h-[180px]"
           >
             <button 
               type="button" 
@@ -424,7 +424,7 @@ export function AIChatbot() {
                 }
               }}
               placeholder="Ask anything..."
-              className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] leading-[1.5] text-[#1a1a1a] placeholder:text-muted p-0 m-0 resize-none min-h-[24px] max-h-[150px] chat-scrollbar font-medium self-center"
+              className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] leading-[1.5] text-[var(--text)] placeholder:text-[var(--muted)] p-0 m-0 resize-none min-h-[24px] max-h-[150px] chat-scrollbar font-medium self-center"
             />
             <button 
               type="submit" 
