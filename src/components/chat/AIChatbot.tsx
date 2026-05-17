@@ -217,7 +217,7 @@ export function AIChatbot() {
       });
 
       index++;
-    }, 45); // highly customized smooth conversational pacing (45ms per word)
+    }, 10); // Instant, highly responsive conversational pacing (10ms per word reveal)
   };
 
   const handleSend = async (overrideInput?: string) => {
