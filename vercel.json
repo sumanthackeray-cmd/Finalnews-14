@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/client",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/favicon.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/create-order", "destination": "/api/create-order" },
+    { "source": "/api/verify-order", "destination": "/api/verify-order" },
+    { "source": "/api/webhook", "destination": "/api/webhook" },
+    { "source": "/api/generate-ai", "destination": "/api/generate-ai" },
+    { "source": "/(assets|favicon|logo|images|manifest|robots)/(.*)", "destination": "/$1/$2" },
+    { "source": "/(.*)", "destination": "/api/index" }
+  ]
+}
