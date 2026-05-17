@@ -19,6 +19,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/__/auth/:path*", "destination": "https://vogats-firebase-studio.firebaseapp.com/__/auth/:path*" },
     { "source": "/api/create-order", "destination": "/api/create-order" },
     { "source": "/api/verify-order", "destination": "/api/verify-order" },
     { "source": "/api/webhook", "destination": "/api/webhook" },

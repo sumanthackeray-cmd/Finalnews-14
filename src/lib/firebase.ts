@@ -2,9 +2,11 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
 
+const isProd = typeof window !== "undefined" && (window.location.hostname === "cv.vogats.com" || window.location.hostname === "vogats.com");
+
 const firebaseConfig = {
   apiKey: "AIzaSyCC81u4VhjmLFYdww8xmcisUQ-4swqMXsQ",
-  authDomain: "vogats-firebase-studio.firebaseapp.com",
+  authDomain: isProd ? "cv.vogats.com" : "vogats-firebase-studio.firebaseapp.com",
   databaseURL: "https://vogats-firebase-studio-default-rtdb.firebaseio.com",
   projectId: "vogats-firebase-studio",
   storageBucket: "vogats-firebase-studio.firebasestorage.app",
