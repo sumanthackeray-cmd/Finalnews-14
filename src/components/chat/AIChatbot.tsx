@@ -206,6 +206,14 @@ export function AIChatbot() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  useEffect(() => {
+    const handleOpenChat = () => {
+      setIsOpen(true);
+    };
+    window.addEventListener("open-vogats-ai", handleOpenChat);
+    return () => window.removeEventListener("open-vogats-ai", handleOpenChat);
+  }, []);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

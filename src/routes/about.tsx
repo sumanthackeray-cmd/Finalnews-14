@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Sparkles, Brain, Target, Layout, CheckCircle, ArrowRight } from "lucide-react";
@@ -40,6 +40,7 @@ const team = [
 
 const blogs = [
   {
+    id: "blog-ats-mistakes",
     tag: "ATS Tips",
     title: "10 ATS Mistakes That Are Silently Killing Your Resume (And How to Fix Them)",
     desc: "Most job seekers don't realize their resume never reaches a human. Here's everything you need to know about passing ATS filters in 2026.",
@@ -50,6 +51,7 @@ const blogs = [
     gradient: "from-indigo-100 to-indigo-200 dark:from-indigo-950/40 dark:to-indigo-900/40",
   },
   {
+    id: "blog-star-method",
     tag: "Career Growth",
     title: "How to Get Promoted in 12 Months Using the STAR Method",
     desc: "A proven framework for documenting your wins and making the case for your next role.",
@@ -60,6 +62,7 @@ const blogs = [
     gradient: "from-teal-100 to-teal-200 dark:from-teal-950/40 dark:to-teal-900/40",
   },
   {
+    id: "blog-ai-jobs",
     tag: "AI & Jobs",
     title: "AI Won't Take Your Job — But This Will Help You Keep It",
     desc: "How to future-proof your career in the age of generative AI and automated hiring systems.",
@@ -273,9 +276,11 @@ function AboutPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {blogs.map((blog, i) => (
-              <article 
+              <Link 
+                to="/blog/$id"
+                params={{ id: blog.id }}
                 key={i}
-                className="bg-card border border-border rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-accent/10 flex flex-col"
+                className="bg-card border border-border rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-accent/10 flex flex-col cursor-pointer group"
               >
                 {/* Visual Header */}
                 <div className={`w-full aspect-[16/9] bg-gradient-to-br ${blog.gradient} flex items-center justify-center text-5xl shrink-0`}>
@@ -288,7 +293,7 @@ function AboutPage() {
                       {blog.tag}
                     </span>
                   </div>
-                  <h3 className="font-display font-black text-lg mb-3 leading-snug hover:text-accent transition-colors duration-200 flex-1">
+                  <h3 className="font-display font-black text-lg mb-3 leading-snug group-hover:text-accent transition-colors duration-200 flex-1">
                     {blog.title}
                   </h3>
                   <p className="text-xs text-muted leading-relaxed font-medium mb-6">
@@ -304,18 +309,18 @@ function AboutPage() {
                     </div>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
 
           <div className="text-center mt-16">
-            <a 
-              href="#blog" 
+            <Link 
+              to="/blog" 
               className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl border-2 border-accent-solid text-accent-solid font-display font-black text-sm uppercase tracking-widest transition-all duration-300 hover:bg-accent-solid hover:text-white"
             >
               <span>View All Articles</span>
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>

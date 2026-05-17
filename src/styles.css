@@ -77,7 +77,7 @@
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
   /* Card: solid dark surface, NOT transparent */
-  --card: 222 47% 8%;
+  --card-hsl: 222 47% 8%;
   --card-foreground: 210 40% 98%;
   /* Popover: solid elevated dark surface in dark mode */
   --popover: 220 40% 10%;

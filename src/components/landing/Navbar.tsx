@@ -71,9 +71,9 @@ export function Navbar() {
     }
   }, [isMobileMenuOpen]);
 
-  const closeMobileMenu = () => {
+  const closeMobileMenu = (isNavigating = false) => {
     setIsMobileMenuOpen(false);
-    if (window.history.state?.mobileMenu === true) {
+    if (!isNavigating && window.history.state?.mobileMenu === true) {
       window.history.back();
     }
   };
@@ -139,7 +139,7 @@ export function Navbar() {
               <Link
                 to="/"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <span className="text-xl w-6">🏠</span>
                 Home
@@ -147,7 +147,7 @@ export function Navbar() {
               <a
                 href="/#pricing"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <span className="text-xl w-6">💳</span>
                 Pricing
@@ -155,7 +155,7 @@ export function Navbar() {
               <Link
                 to="/templates"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <span className="text-xl w-6">📄</span>
                 Templates
@@ -163,7 +163,7 @@ export function Navbar() {
               <Link
                 to="/about"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <span className="text-xl w-6">🚀</span>
                 About Us
@@ -171,7 +171,7 @@ export function Navbar() {
               <Link
                 to="/contact"
                 className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <span className="text-xl w-6">📬</span>
                 Contact
@@ -190,7 +190,7 @@ export function Navbar() {
               <Link
                 to={user ? "/dashboard" : "/auth"}
                 className="w-full"
-                onClick={closeMobileMenu}
+                onClick={() => closeMobileMenu(true)}
               >
                 <button className="btn-premium w-full py-4 text-xs font-black uppercase tracking-widest shadow-lg">
                   {user ? "Dashboard" : "Get Started"}
@@ -201,7 +201,7 @@ export function Navbar() {
                 <button
                   onClick={() => {
                     signOut();
-                    closeMobileMenu();
+                    closeMobileMenu(true);
                   }}
                   className="w-full py-3 text-sm font-bold text-muted hover:text-text transition-colors border border-border/10 rounded-xl"
                 >

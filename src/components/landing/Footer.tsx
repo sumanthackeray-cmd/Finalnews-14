@@ -29,7 +29,7 @@ export function Footer() {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Company</h4>
               <Link to="/contact" className="text-sm font-semibold text-text hover:text-accent transition-colors">Contact</Link>
               <Link to="/about" className="text-sm font-semibold text-text hover:text-accent transition-colors">About Us</Link>
-              <a href="/about#blog" className="text-sm font-semibold text-text hover:text-accent transition-colors">Blog</a>
+              <Link to="/blog" className="text-sm font-semibold text-text hover:text-accent transition-colors">Blog</Link>
             </div>
             <div className="flex flex-col gap-4">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Legal</h4>
