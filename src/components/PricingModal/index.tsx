@@ -21,16 +21,37 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
   const [selectedPlan, setSelectedPlan] = useState<PlanId>(defaultPlanId || "PRO");
   const [mounted, setMounted] = useState(false);
 
-  // Reset view when modal opens; jump to checkout if startAtCheckout
+  // Reset view when modal opens, push history state, and listen to system back gesture dismiss
   useEffect(() => {
     if (isOpen) {
       setSelectedPlan(defaultPlanId || "PRO");          // sync plan from prop
       setView(startAtCheckout ? "checkout" : "plans");  // skip to checkout if triggered by URL
       setMounted(false);
       const t = setTimeout(() => setMounted(true), 10);
-      return () => clearTimeout(t);
+
+      // Push history state to intercept Android back swipe / browser back click
+      if (window.history.state?.pricingModal !== true) {
+        window.history.pushState({ pricingModal: true }, "");
+      }
+
+      const handlePopState = (e: PopStateEvent) => {
+        onClose();
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+        clearTimeout(t);
+      };
     }
-  }, [isOpen, defaultPlanId, startAtCheckout]);
+  }, [isOpen, defaultPlanId, startAtCheckout, onClose]);
+
+  const handleClose = () => {
+    onClose();
+    if (window.history.state?.pricingModal === true) {
+      window.history.back();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -40,7 +61,7 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape") handleClose();
   };
 
   return (
@@ -95,12 +116,11 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
         }
       `}</style>
 
-      {/* ── Overlay ── */}
       <div
         role="dialog"
         aria-modal="true"
         onKeyDown={handleKeyDown}
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9999,
           background: "rgba(5,5,15,0.82)",
@@ -137,9 +157,8 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
             pointerEvents: "none",
           }} />
 
-          {/* ── Close button ── */}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close"
             style={{
               position: "absolute", top: 18, right: 18,

@@ -48,19 +48,35 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll and handle system back-button dismiss on mobile (Android/swipe style)
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
+      
+      // Push unique history state to intercept back action
+      if (window.history.state?.mobileMenu !== true) {
+        window.history.pushState({ mobileMenu: true }, "");
+      }
+
+      const handlePopState = (e: PopStateEvent) => {
+        setIsMobileMenuOpen(false);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [isMobileMenuOpen]);
 
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    if (window.history.state?.mobileMenu === true) {
+      window.history.back();
+    }
+  };
 
   // ── Mobile menu portal ──────────────────────────────────────────────────────
   const mobileMenuPortal = typeof document !== "undefined"

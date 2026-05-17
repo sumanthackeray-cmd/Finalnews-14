@@ -58,21 +58,44 @@ export function AIChatbot() {
     return () => window.removeEventListener("open-vogats-ai", handleOpen);
   }, []);
 
+  // Handle mobile scroll lock and android back-button dismiss gesture
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
     
-    if (isOpen && window.innerWidth < 768) {
-      document.body.style.overflow = 'hidden';
+    if (isOpen) {
+      if (window.innerWidth < 768) {
+        document.body.style.overflow = 'hidden';
+      }
+      
+      // Push history state to intercept Android back swipe / browser back click
+      if (window.history.state?.aiChat !== true) {
+        window.history.pushState({ aiChat: true }, "");
+      }
+
+      const handlePopState = (e: PopStateEvent) => {
+        setIsOpen(false);
+        setIsFullScreen(false);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+        document.body.style.overflow = '';
+      };
     } else {
       document.body.style.overflow = '';
     }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [messages, isOpen, isLoading]);
+
+  const handleCloseChat = () => {
+    setIsOpen(false);
+    setIsFullScreen(false);
+    if (window.history.state?.aiChat === true) {
+      window.history.back();
+    }
+  };
 
   const handleSend = async (overrideInput?: string) => {
     const messageToSend = overrideInput || input.trim();
@@ -207,7 +230,7 @@ export function AIChatbot() {
               {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
             <button 
-              onClick={() => { setIsOpen(false); setIsFullScreen(false); }}
+              onClick={handleCloseChat}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:bg-surface transition-colors"
             >
               <X className="w-5 h-5" />
