@@ -256,7 +256,7 @@ function AboutPage() {
           <div className="text-center mt-16">
             <a 
               href="#blog" 
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl border-2 border-accent text-accent font-display font-black text-sm uppercase tracking-widest transition-all duration-300 hover:bg-accent hover:text-white"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl border-2 border-accent-solid text-accent-solid font-display font-black text-sm uppercase tracking-widest transition-all duration-300 hover:bg-accent-solid hover:text-white"
             >
               <span>View All Articles</span>
               <ArrowRight className="w-4 h-4" />

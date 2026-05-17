@@ -423,3 +423,19 @@ body {
   );
   animation: shimmer 2s infinite;
 }
+
+/* Solid Accent Theme helper classes to avoid Tailwind variable conflicts */
+.bg-accent-solid {
+  background-color: var(--accent) !important;
+}
+.border-accent-solid {
+  border-color: var(--accent) !important;
+}
+.text-accent-solid {
+  color: var(--accent) !important;
+}
+.hover\:bg-accent-solid:hover {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+

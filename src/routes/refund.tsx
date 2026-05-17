@@ -86,7 +86,7 @@ function RefundPage() {
         <div className="absolute top-[-10%] left-[10%] w-[50%] aspect-square bg-radial-gradient from-accent/10 to-transparent blur-3xl pointer-events-none" />
         
         <div className="container mx-auto max-w-4xl px-6 relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 bg-accent/10 text-accent border border-accent/10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 bg-accent/10 text-accent-solid border border-accent/10">
             📋 Legal Policy
           </div>
           <h1 className="font-display font-black text-4xl sm:text-6xl md:text-7xl mb-6 leading-[1.05] tracking-tight">
@@ -143,7 +143,7 @@ function RefundPage() {
               onClick={() => scrollToSec(sec.id)}
               className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border duration-200 ${
                 activeSec === sec.id
-                  ? "bg-accent border-accent text-white shadow-md shadow-accent/20"
+                  ? "bg-accent-solid border-accent-solid text-white shadow-md shadow-accent/20"
                   : "bg-card border-border text-muted hover:text-text hover:bg-surface"
               }`}
             >
@@ -171,7 +171,7 @@ function RefundPage() {
                 Try Vogats CV completely risk-free. If you're not satisfied within 7 days of your purchase, we'll refund you in full — no questions asked.
               </p>
               <div className="pt-2">
-                <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-accent hover:bg-white/90 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
+                <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-accent-solid hover:bg-white/90 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
                   <span>Request a Refund</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -182,7 +182,7 @@ function RefundPage() {
           {/* 1. OVERVIEW */}
           <div id="s1" className="bg-card border border-border rounded-[2.5rem] p-8 md:p-10 space-y-6 scroll-mt-24">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent-solid flex items-center justify-center shrink-0">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
@@ -197,7 +197,7 @@ function RefundPage() {
               <p>
                 Because our service is entirely digital — no physical products are shipped — our policy is specifically tailored to software subscriptions and AI-generated deliverables.
               </p>
-              <div className="flex gap-3 p-4 rounded-2xl bg-accent/5 border border-accent/10 text-accent text-xs">
+              <div className="flex gap-3 p-4 rounded-2xl bg-accent/5 border border-accent/10 text-accent-solid text-xs">
                 <HelpCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <span>This policy applies to all paid subscription plans including Monthly Pro and Annual Pro. Free plan users are not eligible for refunds as no payment is made.</span>
               </div>
@@ -286,7 +286,7 @@ function RefundPage() {
           {/* 4. HOW TO REQUEST */}
           <div id="s4" className="bg-card border border-border rounded-[2.5rem] p-8 md:p-10 space-y-6 scroll-mt-24">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent-solid flex items-center justify-center shrink-0">
                 <Mail className="w-6 h-6" />
               </div>
               <div>
@@ -305,7 +305,7 @@ function RefundPage() {
                   { step: "4", title: "Refund arrives in your account", desc: "Funds are returned to your original payment method within 5–10 business days depending on your bank or card provider." }
                 ].map((t, i) => (
                   <div key={i} className="relative">
-                    <div className="absolute -left-[30px] top-0 w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[10px] font-black">
+                    <div className="absolute -left-[30px] top-0 w-5 h-5 rounded-full bg-accent-solid text-white flex items-center justify-center text-[10px] font-black">
                       {t.step}
                     </div>
                     <div>
@@ -339,7 +339,7 @@ function RefundPage() {
                   { label: "PayPal:", val: "1–3 business days" }
                 ].map((item, i) => (
                   <li key={i} className="flex gap-3">
-                    <div className="w-5 h-5 rounded bg-accent/15 text-accent flex items-center justify-center shrink-0 text-xs">→</div>
+                    <div className="w-5 h-5 rounded bg-accent/15 text-accent-solid flex items-center justify-center shrink-0 text-xs">→</div>
                     <span className="text-xs">
                       <strong>{item.label}</strong> {item.val}
                     </span>
@@ -425,7 +425,7 @@ function RefundPage() {
           {/* 8. CONTACT */}
           <div id="s8" className="bg-card border border-border rounded-[2.5rem] p-8 md:p-10 space-y-6 scroll-mt-24">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent-solid flex items-center justify-center shrink-0">
                 💬
               </div>
               <div>
