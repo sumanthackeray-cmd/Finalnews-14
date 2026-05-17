@@ -229,11 +229,13 @@ function Dashboard() {
               </div>
               <div>
                 <h2 className="text-xl font-bold font-display">
-                  {access.allowed ? `${PLANS[subscription!.planId].label} Access Active` : "No Active Subscription"}
+                  {access.allowed && subscription 
+                    ? `${PLANS[subscription.planId].label} Access Active` 
+                    : (access.allowed ? "Developer Access Active" : "No Active Subscription")}
                 </h2>
                 <p className="text-sm text-muted mt-1">
                   {access.allowed 
-                    ? `Premium features active. PDF + Word downloads enabled. ${remainingDays} days remaining.` 
+                    ? `Premium features active. PDF + Word downloads enabled. ${subscription ? `${remainingDays} days remaining.` : "Unlimited local dev access."}` 
                     : "Build and edit your resume for free. Upgrade to unlock PDF + Word downloads."}
                 </p>
               </div>
