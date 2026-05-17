@@ -104,9 +104,16 @@ KEY STATS:
 - 4.9★ average user rating
 
 FOUNDED BY:
-- Arjun Mehta (CEO) — Ex-Google recruiter, 10+ years experience
-- Sara Chen (CTO) — ML engineer, ex-Meta
-- Priya Nair (Head of Product) — Career coach turned product designer
+- Mr. Kamlesh Kumar (CEO & Co-Founder) — Visionary entrepreneur and career tech leader guiding the Vogats AI mission globally
+- Abhishek Sinha (CTO) — Expert technology architect and machine learning leader directing AI systems and infrastructure
+- Suman Thackeray (Head of Product) — Senior product designer and expert career consultant designing premium intuitive user workflows
+
+REGISTERED OFFICE:
+- Samastipur, Bihar, India (Company registered office location)
+
+SUPPORT CONTACT:
+- Mobile & WhatsApp Support: +91 9801200459 (Connect via WhatsApp/call for instant response)
+- Support Email: support@vogats.com
 
 INTELLIGENCE POWERED BY: Vogats AI (proprietary AI system)
 

@@ -16,24 +16,24 @@ const stats = [
 
 const team = [
   {
-    name: "Arjun Mehta",
+    name: "Mr. Kamlesh Kumar",
     role: "CEO & Co-Founder",
-    desc: "Ex-Google recruiter with 10+ years helping candidates land dream jobs at top companies.",
-    initial: "A",
+    desc: "Visionary entrepreneur and leader guiding Vogats CV to revolutionize modern AI resume and career building services globally.",
+    initial: "K",
     gradient: "from-accent to-purple-500",
   },
   {
-    name: "Sara Chen",
-    role: "CTO & Co-Founder",
-    desc: "ML engineer who built NLP systems at Meta. Now applying AI to the career space.",
-    initial: "S",
+    name: "Abhishek Sinha",
+    role: "CTO",
+    desc: "A seasoned technology architect and machine learning leader directing artificial intelligence models and high-scalability platforms.",
+    initial: "A",
     gradient: "from-emerald-400 to-accent",
   },
   {
-    name: "Priya Nair",
+    name: "Suman Thackeray",
     role: "Head of Product",
-    desc: "Career coach turned product designer. Obsessed with making complex tools feel simple.",
-    initial: "P",
+    desc: "Innovative product designer and senior career consultant passionate about crafting premium, clean, and intuitive user experiences.",
+    initial: "S",
     gradient: "from-orange-500 to-amber-500",
   },
 ];
@@ -43,7 +43,7 @@ const blogs = [
     tag: "ATS Tips",
     title: "10 ATS Mistakes That Are Silently Killing Your Resume (And How to Fix Them)",
     desc: "Most job seekers don't realize their resume never reaches a human. Here's everything you need to know about passing ATS filters in 2026.",
-    author: "Arjun Mehta",
+    author: "Mr. Kamlesh Kumar",
     date: "May 12, 2026",
     readTime: "7 min read",
     icon: "📄",
@@ -53,7 +53,7 @@ const blogs = [
     tag: "Career Growth",
     title: "How to Get Promoted in 12 Months Using the STAR Method",
     desc: "A proven framework for documenting your wins and making the case for your next role.",
-    author: "Priya Nair",
+    author: "Suman Thackeray",
     date: "Apr 28, 2026",
     readTime: "5 min read",
     icon: "💼",
@@ -63,7 +63,7 @@ const blogs = [
     tag: "AI & Jobs",
     title: "AI Won't Take Your Job — But This Will Help You Keep It",
     desc: "How to future-proof your career in the age of generative AI and automated hiring systems.",
-    author: "Sara Chen",
+    author: "Abhishek Sinha",
     date: "Apr 10, 2026",
     readTime: "6 min read",
     icon: "🤖",
@@ -197,6 +197,61 @@ function AboutPage() {
                 </p>
               </div>
             ))}
+          </div>
+
+          {/* Corporate Information */}
+          <div className="mt-20 p-8 sm:p-12 rounded-[2.5rem] bg-card border border-border relative overflow-hidden shadow-2xl max-w-4xl mx-auto">
+            <div className="absolute top-[-60px] right-[-60px] w-64 h-64 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
+            <div className="grid md:grid-cols-2 gap-10 sm:gap-12 relative z-10 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/10 mb-6">
+                  🏢 Registered Entity
+                </div>
+                <h3 className="font-display font-black text-2xl mb-4 text-text">Vogats AI</h3>
+                <p className="text-sm text-muted leading-relaxed font-medium mb-6">
+                  Vogats CV is a globally recognized AI career building platform operated under registered corporate offices in India. We aim to design career tools that are accessible, simple, and impactful.
+                </p>
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl mt-0.5 shrink-0">📍</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-text uppercase tracking-widest mb-1">Registered Office</h4>
+                    <address className="text-xs text-muted leading-relaxed not-italic font-medium">
+                      Samastipur, Bihar, India
+                    </address>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-border space-y-6">
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl mt-0.5 shrink-0">💬</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-text uppercase tracking-widest mb-1">WhatsApp &amp; Support</h4>
+                    <p className="text-xs text-muted font-medium mb-2">Connect instantly with our dedicated support line for fast resolutions.</p>
+                    <a 
+                      href="https://wa.me/919801200459" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-black text-emerald-500 hover:underline"
+                    >
+                      +91 98012 00459 ↗
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 border-t border-border pt-6">
+                  <span className="text-2xl mt-0.5 shrink-0">📧</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-text uppercase tracking-widest mb-1">Email Support</h4>
+                    <p className="text-xs text-muted font-medium mb-2">For business inquiries, refund requests, or API partnerships.</p>
+                    <a 
+                      href="mailto:support@vogats.com" 
+                      className="text-xs font-black text-accent hover:underline"
+                    >
+                      support@vogats.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
