@@ -9,12 +9,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const host = (req.headers['x-forwarded-host'] as string) || req.headers.host || 'localhost';
     const url = `${protocol}://${host}${req.url}`;
 
-    // 2. Map Node headers to Web Headers
+        // 2. Map Node headers to Web Headers
     const headers = new Headers();
     for (const [key, value] of Object.entries(req.headers)) {
       if (value) {
         if (Array.isArray(value)) {
-          value.forEach(v => headers.append(key, v));
+          value.forEach((v: string) => headers.append(key, v));
         } else {
           headers.set(key, value);
         }
@@ -29,9 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       } else {
         body = await new Promise((resolve, reject) => {
           let chunks: any[] = [];
-          req.on('data', chunk => chunks.push(chunk));
+          req.on('data', (chunk: any) => chunks.push(chunk));
           req.on('end', () => resolve(Buffer.concat(chunks)));
-          req.on('error', err => reject(err));
+          req.on('error', (err: any) => reject(err));
         });
       }
     }
@@ -53,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.statusCode = webResponse.status;
     res.statusMessage = webResponse.statusText;
 
-    webResponse.headers.forEach((value, key) => {
+    webResponse.headers.forEach((value: string, key: string) => {
       res.setHeader(key, value);
     });
 
