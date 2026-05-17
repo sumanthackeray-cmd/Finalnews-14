@@ -3,11 +3,18 @@ import { ArrowLeft, Shield } from "lucide-react";
 import type { PlanId } from "@/lib/subscription";
 import { PLANS } from "@/lib/subscription";
 
-const CASHFREE_ENV = (import.meta.env.VITE_CASHFREE_ENV as string) || "sandbox";
-const CF_PAYMENT_BASE = CASHFREE_ENV === "production"
-  ? "https://payments.cashfree.com/order/#"
-  : "https://payments-test.cashfree.com/order/#";
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string;
 
+declare global { interface Window { Razorpay: any; } }
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true); s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
 
 interface CheckoutStepProps {
   planId: PlanId;
@@ -61,6 +68,9 @@ export function CheckoutStep({ planId, onBack, userName, userEmail }: CheckoutSt
     setStep("loading");
 
     try {
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Failed to load Razorpay. Check your connection.");
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,10 +85,41 @@ export function CheckoutStep({ planId, onBack, userName, userEmail }: CheckoutSt
       });
 
       const data = await res.json();
-      if (!res.ok || !data.payment_session_id) throw new Error(data.error || "Order creation failed.");
+      if (!res.ok || !data.order_id) throw new Error(data.error || "Order creation failed.");
 
-      // Full-page redirect to Cashfree hosted checkout
-      window.location.href = `${CF_PAYMENT_BASE}${data.payment_session_id}`;
+      const rzp = new window.Razorpay({
+        key:         RZP_KEY_ID,
+        order_id:    data.order_id,
+        amount:      data.amount,
+        currency:    data.currency || "INR",
+        name:        "Vogats CV",
+        description: `${plan.label} Plan`,
+        prefill: { name: form.name.trim(), email: form.email.trim(), contact: `+91${form.phone.trim()}` },
+        theme: { color: "#f59e0b" },
+        handler: async (resp: any) => {
+          const vRes = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id:   resp.razorpay_order_id,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature:  resp.razorpay_signature,
+            }),
+          });
+          const vData = await vRes.json();
+          if (!vRes.ok || !vData.success) {
+            setApiError(vData.error || "Payment verification failed.");
+            setStep("form"); return;
+          }
+          setStep("form"); // parent will handle success
+        },
+        modal: { ondismiss: () => setStep("form") },
+      });
+      rzp.on("payment.failed", (r: any) => {
+        setApiError(r?.error?.description || "Payment failed. Please retry.");
+        setStep("form");
+      });
+      rzp.open();
     } catch (err: any) {
       setApiError(err.message || "Something went wrong. Please retry.");
       setStep("form");
@@ -241,7 +282,7 @@ export function CheckoutStep({ planId, onBack, userName, userEmail }: CheckoutSt
         color: "#52525b", fontSize: 11, letterSpacing: "0.06em",
         display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
       }}>
-        🔒 Powered by Cashfree · PCI DSS Compliant · 256-bit SSL
+        🔒 Powered by Razorpay · PCI DSS Compliant · 256-bit SSL
       </div>
     </div>
   );

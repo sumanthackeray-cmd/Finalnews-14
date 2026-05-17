@@ -45,13 +45,20 @@ const DISPLAY_PLANS = [
   },
 ];
 
-const CASHFREE_ENV = (import.meta.env.VITE_CASHFREE_ENV as string) || "sandbox";
+// Public Razorpay key only — secret never reaches frontend
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string;
 
-function getCashfreePaymentUrl(sessionId: string): string {
-  if (CASHFREE_ENV === "production") {
-    return `https://payments.cashfree.com/order/#${sessionId}`;
-  }
-  return `https://payments-test.cashfree.com/order/#${sessionId}`;
+declare global { interface Window { Razorpay: any; } }
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload  = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 }
 
 /* ─── Checkout Modal ────────────────────────────────────────── */
@@ -78,6 +85,9 @@ function CheckoutModal({ plan, onClose, userProfile }: { plan: any, onClose: () 
     if (Object.keys(e).length) { setErrors(e); return; }
     setStep("loading");
     try {
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Failed to load Razorpay. Check your connection.");
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,8 +101,36 @@ function CheckoutModal({ plan, onClose, userProfile }: { plan: any, onClose: () 
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.payment_session_id) throw new Error(data.error || "Order creation failed.");
-      window.location.href = getCashfreePaymentUrl(data.payment_session_id);
+      if (!res.ok || !data.order_id) throw new Error(data.error || "Order creation failed.");
+
+      const rzp = new window.Razorpay({
+        key:         RZP_KEY_ID,
+        order_id:    data.order_id,
+        amount:      data.amount,
+        currency:    data.currency || "INR",
+        name:        "Vogats CV",
+        description: `${plan.name} Plan`,
+        prefill: { name: form.name.trim(), email: form.email.trim(), contact: `+91${form.phone.trim()}` },
+        theme: { color: "#6366f1" },
+        handler: async (resp: any) => {
+          const vRes = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id:   resp.razorpay_order_id,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature:  resp.razorpay_signature,
+            }),
+          });
+          const vData = await vRes.json();
+          if (!vRes.ok || !vData.success) { setStep("error"); setErrMsg(vData.error || "Verification failed."); return; }
+          setStep("form"); // reset
+          onClose();
+        },
+        modal: { ondismiss: () => setStep("form") },
+      });
+      rzp.on("payment.failed", (r: any) => { setStep("error"); setErrMsg(r?.error?.description || "Payment failed."); });
+      rzp.open();
     } catch (err: any) {
       setStep("error"); setErrMsg(err.message || "Failed to process payment.");
     }
@@ -183,6 +221,7 @@ function CheckoutModal({ plan, onClose, userProfile }: { plan: any, onClose: () 
                 <CreditCard className="w-4 h-4" />
                 <Shield className="w-4 h-4" />
               </div>
+              <p className="text-center text-xs text-muted-foreground mt-2">🔒 Secured by Razorpay · 256-bit SSL</p>
             </div>
           )}
 

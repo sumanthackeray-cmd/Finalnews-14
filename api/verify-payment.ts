@@ -21,24 +21,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Razorpay signature verification: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
     const payload   = `${razorpay_order_id}|${razorpay_payment_id}`;
     const generated = crypto.createHmac("sha256", KEY_SECRET).update(payload).digest("hex");
 
     if (generated !== razorpay_signature) {
-      console.warn("[Razorpay] Signature mismatch for order:", razorpay_order_id);
-      return res.status(400).json({ error: "Payment signature verification failed. Do NOT mark as paid." });
+      console.warn("[Razorpay] Signature mismatch:", razorpay_order_id);
+      return res.status(400).json({ error: "Payment signature verification failed." });
     }
 
-    console.log("[Razorpay] Payment verified successfully:", razorpay_payment_id);
-
-    return res.json({
-      success:    true,
-      payment_id: razorpay_payment_id,
-      order_id:   razorpay_order_id,
-    });
+    console.log("[Razorpay] Payment verified:", razorpay_payment_id);
+    return res.json({ success: true, payment_id: razorpay_payment_id, order_id: razorpay_order_id });
   } catch (err: any) {
-    console.error("[Razorpay] Verify error:", err);
     return res.status(500).json({ error: err.message || "Internal server error" });
   }
 }

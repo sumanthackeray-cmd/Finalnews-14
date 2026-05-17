@@ -1,11 +1,8 @@
 import { useState } from "react";
 import { PLANS, PlanId } from "@/lib/subscription";
 
-const CASHFREE_ENV = (import.meta.env.VITE_CASHFREE_ENV as string) || "sandbox";
-const CF_PAYMENT_BASE = CASHFREE_ENV === "production"
-  ? "https://payments.cashfree.com/order/#"
-  : "https://payments-test.cashfree.com/order/#";
-
+// Public key only — secret never reaches frontend
+const RZP_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string;
 
 interface CheckoutModalProps {
   planId: PlanId;
@@ -19,7 +16,25 @@ interface FormState {
   phone: string;
 }
 
-type Step = "form" | "processing" | "error";
+type Step = "form" | "processing" | "success" | "error";
+
+// Extend Window to include Razorpay
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload  = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps) {
   const plan = PLANS[planId];
@@ -42,26 +57,87 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
     setStep("processing");
 
     try {
+      // 1. Load Razorpay checkout script
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Failed to load Razorpay checkout. Check your internet connection.");
+
+      // 2. Create order on backend
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName: form.name.trim(),
+          customerName:  form.name.trim(),
           customerEmail: form.email.trim().toLowerCase(),
           customerPhone: form.phone.trim(),
-          amount: plan.price,
-          planName: plan.label,
-          planId: planId,
+          amount:        plan.price,
+          planName:      plan.label,
+          planId,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok || !data.payment_session_id) {
+      if (!res.ok || !data.order_id) {
         throw new Error(data.error || "Order creation failed. Please try again.");
       }
 
-      // Redirect to Cashfree hosted payment page
-      window.location.href = `${CF_PAYMENT_BASE}${data.payment_session_id}`;
+      // 3. Open Razorpay payment modal
+      const rzp = new window.Razorpay({
+        key:         RZP_KEY_ID,
+        order_id:    data.order_id,
+        amount:      data.amount,
+        currency:    data.currency || "INR",
+        name:        "Vogats CV",
+        description: `${plan.label} Plan`,
+        image:       "/favicon.ico",
+        prefill: {
+          name:    form.name.trim(),
+          email:   form.email.trim().toLowerCase(),
+          contact: `+91${form.phone.trim()}`,
+        },
+        theme: { color: "#6366f1" },
+
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          // 4. Verify payment signature on backend
+          try {
+            const vRes = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature:  response.razorpay_signature,
+              }),
+            });
+            const vData = await vRes.json();
+            if (!vRes.ok || !vData.success) {
+              throw new Error(vData.error || "Signature verification failed.");
+            }
+            setStep("success");
+            onSuccess(planId, response.razorpay_order_id);
+          } catch (err: any) {
+            setStep("error");
+            setErrMsg(err.message || "Payment verification failed. Contact support.");
+          }
+        },
+
+        modal: {
+          ondismiss: () => {
+            // User cancelled — go back to form
+            setStep("form");
+          },
+        },
+      });
+
+      rzp.on("payment.failed", (response: any) => {
+        setStep("error");
+        setErrMsg(response?.error?.description || "Payment failed. Please try again.");
+      });
+
+      rzp.open();
     } catch (err: any) {
       setStep("error");
       setErrMsg(err.message || "Something went wrong. Please retry.");
@@ -125,7 +201,6 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
               <h3 className="text-gray-800 font-bold text-base mb-4">Enter your details to continue</h3>
 
               <div className="space-y-3">
-                {/* Name */}
                 <div>
                   <input
                     className={inputCls("name")}
@@ -136,8 +211,6 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
                   />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
-
-                {/* Email */}
                 <div>
                   <input
                     className={inputCls("email")}
@@ -149,8 +222,6 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
-
-                {/* Phone */}
                 <div>
                   <div className="flex">
                     <span className="px-3 py-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-semibold flex items-center select-none">
@@ -178,7 +249,7 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
               {/* Payment method chips */}
               <div className="mt-4 flex items-center gap-2 flex-wrap">
                 <span className="text-gray-400 text-xs">Pay via</span>
-                {["UPI", "Card", "Net Banking", "Wallet"].map((m) => (
+                {["UPI", "Card", "Net Banking", "Wallet", "EMI"].map((m) => (
                   <span
                     key={m}
                     className="text-xs px-2 py-1 rounded-lg font-semibold"
@@ -189,7 +260,6 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
                 ))}
               </div>
 
-              {/* Pay Button */}
               <button
                 onClick={handlePay}
                 className="mt-5 w-full py-4 rounded-2xl font-bold text-white text-base tracking-wide transition-all hover:shadow-xl hover:-translate-y-0.5 active:scale-95 cursor-pointer border-none"
@@ -200,7 +270,7 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
 
               <div className="mt-3 flex items-center justify-center gap-2 text-gray-400 text-xs">
                 <span>🔒</span>
-                <span>256-bit SSL encrypted · Powered by Cashfree</span>
+                <span>256-bit SSL encrypted · Powered by Razorpay</span>
               </div>
             </>
           )}
@@ -210,15 +280,33 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
             <div className="py-10 flex flex-col items-center gap-4">
               <div
                 className="w-14 h-14 rounded-full border-4 border-indigo-200 border-t-indigo-600"
-                style={{ animation: "cfSpin 0.8s linear infinite" }}
+                style={{ animation: "rzpSpin 0.8s linear infinite" }}
               />
-              <p className="text-gray-700 font-semibold text-base">Creating your order…</p>
+              <p className="text-gray-700 font-semibold text-base">Opening secure payment…</p>
               <p className="text-gray-400 text-sm text-center leading-relaxed">
-                Please wait. You&apos;ll be redirected to Cashfree&apos;s secure payment page.
+                Razorpay&apos;s payment window is loading. Please do not close this tab.
               </p>
               <div className="text-xs text-gray-300 font-medium mt-1">
                 ₹{plan.price} · {plan.label} Plan
               </div>
+            </div>
+          )}
+
+          {/* SUCCESS STEP */}
+          {step === "success" && (
+            <div className="py-8 flex flex-col items-center gap-4">
+              <div className="text-5xl">🎉</div>
+              <p className="text-green-600 font-bold text-lg">Payment Successful!</p>
+              <p className="text-gray-500 text-sm text-center">
+                Your {plan.label} plan is now active. Check your dashboard for access.
+              </p>
+              <button
+                onClick={onClose}
+                className="px-8 py-3 rounded-xl font-bold text-white text-sm cursor-pointer border-none hover:shadow-lg transition-all"
+                style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}
+              >
+                Go to Dashboard
+              </button>
             </div>
           )}
 
@@ -245,7 +333,7 @@ export function CheckoutModal({ planId, onClose, onSuccess }: CheckoutModalProps
           from { opacity: 0; transform: translateY(40px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0)    scale(1); }
         }
-        @keyframes cfSpin { to { transform: rotate(360deg); } }
+        @keyframes rzpSpin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
