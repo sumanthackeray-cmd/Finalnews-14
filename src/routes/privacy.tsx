@@ -286,7 +286,7 @@ function PrivacyPage() {
                   <li><strong>Access:</strong> Request a copy of all data we hold about you</li>
                   <li><strong>Correction:</strong> Update inaccurate or incomplete information</li>
                   <li><strong>Deletion:</strong> Delete your account and all associated data at any time</li>
-                  <li><strong>Portability:</strong> Export your resume data in standard formats (PDF, DOCX)</li>
+                  <li><strong>Portability:</strong> Export your resume data in standard formats (PDF)</li>
                   <li><strong>Opt-out:</strong> Unsubscribe from marketing emails at any time</li>
                 </ul>
                 <p className="text-sm text-muted-foreground leading-relaxed mt-4">To exercise any right, visit your account settings or contact <span className="text-[#1a56ff]">privacy@vogats.ai</span>.</p>

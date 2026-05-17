@@ -558,10 +558,10 @@ function ATSContent() {
       {/* Mistake 3 */}
       <div className="mistake-card">
         <div className="mistake-num">3</div>
-        <h3>Submitting a PDF When the System Wants a DOCX</h3>
+        <h3>Submitting Poorly Formatted or Unparseable Resume Files</h3>
         <span className="wrong">❌ Mistake</span><span class="fix">✅ Fix Below</span>
-        <p>Many older ATS platforms struggle to parse PDFs accurately. Some read them fine; others extract garbled text or skip sections entirely. Unless the job posting specifically says \"PDF preferred,\" always have both formats ready.</p>
-        <div className="fix-box">✅ <strong>Fix:</strong> Always read the application instructions carefully. Vogats AI lets you download your resume as both PDF and DOCX — switch between them in one click.</div>
+        <p>Many job seekers export their resumes as scanned PDF images or poorly structured files. Older ATS platforms cannot parse text inside images, rendering your application completely blank to recruiters.</p>
+        <div className="fix-box">✅ <strong>Fix:</strong> Always use clean, text-based PDF formats with standard selectable fonts. Vogats AI exports high-fidelity, fully searchable PDF files that are 100% parseable by all ATS systems.</div>
       </div>
 
       {/* Mistake 4 */}

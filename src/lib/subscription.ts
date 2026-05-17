@@ -13,7 +13,7 @@ export const PLANS = {
     unlimited: false,
     color: "oklch(0.7 0.2 60)", // Amber
     badge: "Quick Access",
-    perks: ["3 days validity", "10 resumes created", "PDF + Word downloads", "AI-powered content", "5 professional templates", "ATS-optimized format"],
+    perks: ["3 days validity", "10 resumes created", "PDF downloads", "AI-powered content", "5 professional templates", "ATS-optimized format"],
   },
   PRO: {
     id: "PRO",
@@ -24,7 +24,7 @@ export const PLANS = {
     unlimited: false,
     color: "oklch(0.6 0.2 260)", // Indigo
     badge: "Most Popular",
-    perks: ["15 days validity", "49 resumes created", "PDF + Word downloads", "AI-powered content", "20+ premium templates", "Cover letter builder", "LinkedIn profile optimizer", "Priority AI generation"],
+    perks: ["15 days validity", "49 resumes created", "PDF downloads", "AI-powered content", "20+ premium templates", "Cover letter builder", "LinkedIn profile optimizer", "Priority AI generation"],
   },
   UNLIMITED: {
     id: "UNLIMITED",
@@ -35,7 +35,7 @@ export const PLANS = {
     unlimited: true,
     color: "oklch(0.65 0.15 160)", // Emerald
     badge: "Best Value",
-    perks: ["60 days validity", "Unlimited resumes", "PDF + Word downloads", "AI-powered content", "All 50+ templates", "Cover letter builder", "LinkedIn profile optimizer", "24/7 Priority support", "Interview prep toolkit"],
+    perks: ["60 days validity", "Unlimited resumes", "PDF downloads", "AI-powered content", "All 50+ templates", "Cover letter builder", "LinkedIn profile optimizer", "24/7 Priority support", "Interview prep toolkit"],
   },
 };
 

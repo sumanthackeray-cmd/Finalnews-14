@@ -942,10 +942,6 @@ function Builder() {
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
             <TemplatePicker value={template} onChange={setTemplate} data={data} />
             <TemplateCompare current={template} onSelect={setTemplate} data={data} />
-            <Button size="sm" variant="outline" onClick={exportDOCX} disabled={exporting} className="h-10 min-w-10">
-              <FileText className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">DOCX</span>
-            </Button>
             <Button size="sm" variant="ink" onClick={exportPDF} disabled={exporting} className="h-10 min-w-10">
               {exporting ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin" /> : <Download className="h-4 w-4 sm:mr-1.5" />}
               <span className="hidden sm:inline">PDF</span>
@@ -1453,11 +1449,8 @@ function Builder() {
                       <Button size="sm" variant="outline" className="h-10 text-xs" onClick={downloadCoverLetterTxt}>
                         <Download className="h-3.5 w-3.5 mr-1.5" />Download .txt
                       </Button>
-                      <Button size="sm" variant="ink" className="h-10 text-xs" onClick={downloadCoverLetterPdf}>
+                      <Button size="sm" variant="ink" className="h-10 text-xs col-span-2" onClick={downloadCoverLetterPdf}>
                         <FileDown className="h-3.5 w-3.5 mr-1.5" />Download PDF
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-10 text-xs" onClick={downloadCoverLetterDocx}>
-                        <FileText className="h-3.5 w-3.5 mr-1.5" />Download Word
                       </Button>
                     </div>
                   </div>

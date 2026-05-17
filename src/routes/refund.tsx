@@ -278,7 +278,7 @@ function RefundPage() {
             <ul className="space-y-3">
               {[
                 "Add-on credits — one-time AI credit top-ups that have been partially or fully used",
-                "Resume downloads — PDF/DOCX files already downloaded to your device",
+                "Resume downloads — PDF files already downloaded to your device",
                 "Renewals past the window — not cancelled before billing date (unless within 48 hrs of renewal)",
                 "Promotional purchases — plans bought at special discount events or lifetime deals (unless defective)",
               ].map(t => <Check key={t} color="red">{t}</Check>)}

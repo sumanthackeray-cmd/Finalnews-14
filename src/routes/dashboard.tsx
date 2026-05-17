@@ -235,8 +235,8 @@ function Dashboard() {
                 </h2>
                 <p className="text-sm text-muted mt-1">
                   {access.allowed 
-                    ? `Premium features active. PDF + Word downloads enabled. ${subscription ? `${remainingDays} days remaining.` : "Unlimited local dev access."}` 
-                    : "Build and edit your resume for free. Upgrade to unlock PDF + Word downloads."}
+                    ? `Premium features active. PDF downloads enabled. ${subscription ? `${remainingDays} days remaining.` : "Unlimited local dev access."}` 
+                    : "Build and edit your resume for free. Upgrade to unlock PDF downloads."}
                 </p>
               </div>
             </div>

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/templates")({
   head: () => ({
     meta: [
       { title: "Resume Templates — Vogats CV" },
-      { name: "description", content: "Explore 10 ATS-optimized, AI-ready resume templates. Fully editable, PDF & Word export." },
+      { name: "description", content: "Explore 10 ATS-optimized, AI-ready resume templates. Fully editable, PDF export." },
     ],
   }),
   component: TemplatesPage,
@@ -264,7 +264,7 @@ function TemplatesPage() {
 
           <p className="text-muted text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-10">
             Every layout is recruiter-tested, ATS-compliant, and editable live.
-            Export to&nbsp;<strong className="text-text">PDF&nbsp;+&nbsp;Word</strong> in one click.
+            Export to&nbsp;<strong className="text-text">PDF</strong> in one click.
           </p>
 
           {/* Stat pills */}
@@ -272,7 +272,7 @@ function TemplatesPage() {
             {[
               { icon: <LayoutGrid className="h-4 w-4" />, label: "10 Layouts" },
               { icon: <ShieldCheck className="h-4 w-4" />, label: "100% ATS Safe" },
-              { icon: <FileDown className="h-4 w-4" />, label: "PDF + DOCX" },
+              { icon: <FileDown className="h-4 w-4" />, label: "PDF Export" },
             ].map(({ icon, label }) => (
               <span
                 key={label}

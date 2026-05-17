@@ -175,7 +175,7 @@ TEMPLATES AVAILABLE:
 - Multiple professional resume templates
 - All templates are ATS-friendly (no tables/columns that break parsing)
 - Clean, modern designs suitable for all industries
-- Downloadable in PDF and DOCX format
+- Downloadable in PDF format
 - Templates cover: Tech/Engineering, Marketing, Finance, Healthcare, Creative, Entry-level/Freshers, Executive/Senior roles
 
 HOW TO USE:
@@ -183,7 +183,7 @@ HOW TO USE:
 2. Go to Dashboard → Templates
 3. Choose a template
 4. Fill in your details or let AI generate content
-5. Download as PDF or DOCX
+5. Download as PDF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 4 — PRICING (cv.vogats.com/#pricing)
@@ -205,7 +205,7 @@ PRO MONTHLY PLAN — Paid
 - Resume tailoring to any job
 - Interview prep tools
 - Priority support
-- PDF + DOCX downloads (Unlimited)
+- PDF downloads (Unlimited)
 
 PRO ANNUAL PLAN — Paid (Best Value)
 - Everything in Pro Monthly
@@ -214,7 +214,7 @@ PRO ANNUAL PLAN — Paid (Best Value)
 
 IMPORTANT PRICING NOTES:
 - You can build and preview your resume completely for free.
-- Downloading any resume as PDF or DOCX format is strictly locked for free users and requires a paid Pro plan subscription. No free downloads are allowed.
+- Downloading any resume as PDF format is strictly locked for free users and requires a paid Pro plan subscription. No free downloads are allowed.
 - 7-day money-back guarantee on all paid plans
 - Cancel anytime from Account Settings → Billing
 - Payments processed securely via Razorpay
@@ -333,7 +333,7 @@ YOUR RIGHTS:
 - Access: Request a copy of your data
 - Correction: Update incorrect information
 - Deletion: Delete account + all data anytime
-- Portability: Export resume as PDF or DOCX
+- Portability: Export resume as PDF
 - Opt-out: Unsubscribe from emails anytime
 
 COOKIES:
@@ -396,7 +396,7 @@ NOT ELIGIBLE ❌:
 
 NON-REFUNDABLE ITEMS:
 - Add-on AI credits that have been used
-- Resume files already downloaded (PDF/DOCX)
+- Resume files already downloaded (PDF)
 - Subscription renewals (unless requested within 48 hrs)
 - Promotional/discounted plan purchases
 
@@ -442,13 +442,13 @@ Q: What is Vogats AI?
 A: Vogats AI is an AI-powered resume builder at cv.vogats.com that helps you create professional, ATS-optimized resumes in minutes using artificial intelligence.
 
 Q: Is Vogats AI free?
-A: You can build, customize, and visually preview your resume completely for free. However, downloading your resume in PDF or DOCX format is locked on the free account and requires upgrading to a paid Pro subscription plan. No free downloads are allowed.
+A: You can build, customize, and visually preview your resume completely for free. However, downloading your resume in PDF format is locked on the free account and requires upgrading to a paid Pro subscription plan. No free downloads are allowed.
 
 Q: Can I download my resume for free?
-A: No, downloading your resume in PDF or DOCX format is a premium feature. While you can build, edit, and preview your resume completely for free, you must subscribe to a paid Pro plan to download the final file.
+A: No, downloading your resume in PDF format is a premium feature. While you can build, edit, and preview your resume completely for free, you must subscribe to a paid Pro plan to download the final file.
 
 Q: How does the AI resume builder work?
-A: Enter your work experience → our AI generates professional bullet points, summaries, and a complete resume. You can then edit and customize it for free. To download it as PDF or DOCX, or to tailor it to specific jobs, upgrade to a paid Pro subscription plan.
+A: Enter your work experience → our AI generates professional bullet points, summaries, and a complete resume. You can then edit and customize it for free. To download it as PDF, or to tailor it to specific jobs, upgrade to a paid Pro subscription plan.
 
 Q: What is ATS?
 A: ATS (Applicant Tracking System) is software companies use to automatically screen resumes before a human sees them. 75% of resumes are rejected by ATS. Vogats AI optimizes your resume to pass these systems.
@@ -463,7 +463,7 @@ Q: Is my resume data safe?
 A: Yes. We use AES-256 encryption, TLS/SSL, and never sell your data. You own your resume content completely.
 
 Q: What file formats can I download?
-A: PDF and DOCX (Microsoft Word) formats are available.
+A: PDF format is available.
 
 Q: Can I use Vogats AI in India?
 A: Absolutely! We accept UPI, Net Banking, and Indian Debit/Credit Cards. Refunds via UPI/Net Banking take 3–7 business days.
