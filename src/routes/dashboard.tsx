@@ -196,7 +196,7 @@ function Dashboard() {
         duration: 15000
       });
     }
-    setShowPayModal(null);
+    setShowPlanModal(false);
   }, [user]);
 
   if (loading || !user) return null;
@@ -419,6 +419,7 @@ function Dashboard() {
       <PricingModal
         isOpen={showPlanModal}
         onClose={() => { setShowPlanModal(false); setTriggeredPlanId(null); }}
+        onSuccess={handlePaymentSuccess}
         defaultPlanId={triggeredPlanId || "PRO"}
         startAtCheckout={!!triggeredPlanId}
         userName={user?.displayName || profile?.displayName || ""}

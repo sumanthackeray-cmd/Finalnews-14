@@ -21,12 +21,13 @@ interface CheckoutStepProps {
   onBack: () => void;
   userName?: string;   // auto-fill from profile
   userEmail?: string;  // auto-fill from profile
+  onSuccess?: (orderId: string) => void;
 }
 
 interface FormState { name: string; email: string; phone: string; }
 type Step = "form" | "loading";
 
-export function CheckoutStep({ planId, onBack, userName, userEmail }: CheckoutStepProps) {
+export function CheckoutStep({ planId, onBack, userName, userEmail, onSuccess }: CheckoutStepProps) {
   const plan = PLANS[planId];
 
   // Pre-fill name & email from Firebase profile; phone must be entered manually
@@ -111,7 +112,8 @@ export function CheckoutStep({ planId, onBack, userName, userEmail }: CheckoutSt
             setApiError(vData.error || "Payment verification failed.");
             setStep("form"); return;
           }
-          setStep("form"); // parent will handle success
+          setStep("form");
+          if (onSuccess) onSuccess(resp.razorpay_order_id);
         },
         modal: { ondismiss: () => setStep("form") },
       });

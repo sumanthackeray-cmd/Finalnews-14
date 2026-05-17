@@ -12,11 +12,12 @@ interface PricingModalProps {
   userName?: string;   // pre-fill from Firebase user.displayName
   userEmail?: string;  // pre-fill from Firebase user.email
   startAtCheckout?: boolean; // skip plan selection, go directly to checkout
+  onSuccess?: (planId: PlanId, orderId: string) => void;
 }
 
 type View = "plans" | "checkout";
 
-export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEmail, startAtCheckout }: PricingModalProps) {
+export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEmail, startAtCheckout, onSuccess }: PricingModalProps) {
   const [view, setView] = useState<View>("plans");
   const [selectedPlan, setSelectedPlan] = useState<PlanId>(defaultPlanId || "PRO");
   const [mounted, setMounted] = useState(false);
@@ -263,6 +264,9 @@ export function PricingModal({ isOpen, onClose, defaultPlanId, userName, userEma
               onBack={() => setView("plans")}
               userName={userName}
               userEmail={userEmail}
+              onSuccess={(orderId) => {
+                onSuccess?.(selectedPlan, orderId);
+              }}
             />
           )}
         </div>

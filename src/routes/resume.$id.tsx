@@ -413,7 +413,7 @@ function Builder() {
         description: access.reason + ". Upgrade to download your cover letter.",
         action: {
           label: "Upgrade Now",
-          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO" } }),
+          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO", template: undefined } }),
         },
         duration: 6000,
       });
@@ -468,7 +468,7 @@ function Builder() {
         description: access.reason + ". Upgrade to download your cover letter as Word document.",
         action: {
           label: "Upgrade Now",
-          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO" } }),
+          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO", template: undefined } }),
         },
         duration: 6000,
       });
@@ -683,7 +683,7 @@ function Builder() {
         description: access.reason + ". Upgrade to download as Word document.",
         action: {
           label: "Upgrade Now",
-          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO" } }),
+          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO", template: undefined } }),
         },
         duration: 6000,
       });
@@ -744,7 +744,7 @@ function Builder() {
       <header className="border-b glass sticky top-0 z-[100]">
         <div className="container mx-auto flex flex-wrap h-auto min-h-14 max-w-[1400px] items-center justify-between gap-2 px-3 py-2 sm:px-4">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Link to="/dashboard" className="text-muted-foreground hover:text-foreground shrink-0 inline-flex items-center justify-center min-w-10 min-h-10">
+            <Link to="/dashboard" search={{ buy: undefined, template: undefined } as any} className="text-muted-foreground hover:text-foreground shrink-0 inline-flex items-center justify-center min-w-10 min-h-10">
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <img src={logo} alt="Vogats CV Logo" className="h-6 w-6 rounded-md object-cover" />
@@ -1321,7 +1321,7 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
     { name: "Cross-Functional Collaboration", level: 95 }
   ];
   const skillsToRender = data.skills && data.skills.length > 0 
-    ? data.skills.slice(0, 4).map(s => ({ name: s.name, level: s.level || 85 })) 
+    ? data.skills.slice(0, 4).map(s => { const skill = s as any; return { name: skill.name || skill, level: skill.level || 85 }; }) 
     : fallbackSkills;
 
   return (
@@ -1505,12 +1505,12 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
               <span style={{ wordBreak: "break-all" }}>{data.basics.email || "yourname@domain.com"}</span>
             </div>
             {/* Website */}
-            {data.basics.url && (
+            {(data.basics as any).url && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <svg style={{ width: "12px", height: "12px", fill: "none", stroke: "currentColor", strokeWidth: 2 }} viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
-                <span>{data.basics.url}</span>
+                <span>{(data.basics as any).url}</span>
               </div>
             )}
             {/* Location */}
@@ -1520,7 +1520,11 @@ function CoverLetterPagePreview({ data, clText, clCompany, clRole, clSignature }
               </svg>
               <span>
                 {data.basics.location 
-                  ? [data.basics.location.address, data.basics.location.city, data.basics.location.country].filter(Boolean).join(", ") 
+                  ? [
+                      (data.basics.location as any).address,
+                      (data.basics.location as any).city,
+                      (data.basics.location as any).country
+                    ].filter(Boolean).join(", ") 
                   : "3553 Blackwell Street, Taksokk"}
               </span>
             </div>
