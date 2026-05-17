@@ -15,9 +15,11 @@ export type AIAction =
   | "hobbies"
   | "education-notes"
   | "projects"
-  | "projects"
   | "improve"
-  | "chat";
+  | "chat"
+  | "tailor-to-job"
+  | "interview-questions"
+  | "complete-resume";
 
 // ── Core Vogats AI fetch helper (runs directly in the browser) ─────────────────
 async function vogatsAIChat(
@@ -761,6 +763,98 @@ Output ONLY the improved text.`;
       }
       
       return { text: text.trim() };
+    }
+
+    // ── Tailor Resume to Job Description ────────────────────────────────
+    if (action === "tailor-to-job") {
+      const system = `You are an expert resume consultant and ATS optimization specialist.
+Your task is to tailor an existing resume to match a specific job description as closely as possible.
+You must:
+1. Rewrite the professional summary to directly address the role and company's needs.
+2. Enhance bullet points with keywords from the job description.
+3. Suggest skills additions (comma-separated).
+Output ONLY valid JSON with this schema:
+{
+  "summary": "Rewritten professional summary...",
+  "experienceBullets": { "<experience_id>": ["Improved bullet 1", "Improved bullet 2"] },
+  "suggestedSkills": ["skill1", "skill2", "skill3"]
+}`;
+
+      const user = `Job Description:
+${data.jobDescription || "Not provided"}
+
+Candidate Resume:
+Name: ${data.name || "Candidate"}
+Title: ${data.title || "Professional"}
+Summary: ${data.summary || ""}
+Experience: ${JSON.stringify(data.experience || [])}
+Skills: ${(data.skills || []).join(", ")}
+
+Tailor this resume to perfectly match the job description above. Return ONLY valid JSON.`;
+
+      const text = await vogatsAIChat(system, user, true);
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { summary: "", experienceBullets: {}, suggestedSkills: [] };
+      }
+    }
+
+    // ── Interview Questions Generator ────────────────────────────────────
+    if (action === "interview-questions") {
+      const system = `You are a senior hiring manager and interview coach at a top company.
+Generate 8 highly specific, role-relevant interview questions the candidate is likely to face based on their resume.
+Include a mix of: 2 behavioral (STAR format), 2 technical/skills-based, 2 achievement-focused, and 2 situational questions.
+For each question, also provide a short expert coaching tip (1 sentence).
+Output ONLY valid JSON:
+{
+  "questions": [
+    { "type": "Behavioral", "question": "...", "tip": "Use the STAR method: Situation, Task, Action, Result." },
+    ...
+  ]
+}`;
+
+      const user = `Generate tailored interview questions for:
+Name: ${data.name || "Candidate"}
+Target Role: ${data.title || "Professional"}
+Experience: ${JSON.stringify((data.experience || []).slice(0, 3))}
+Key Skills: ${(data.skills || []).slice(0, 10).join(", ")}
+Notable Achievements: ${JSON.stringify((data.experience || []).flatMap((e: any) => e.bullets || []).slice(0, 5))}`;
+
+      const text = await vogatsAIChat(system, user, true);
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { questions: [] };
+      }
+    }
+
+    // ── Complete Resume Auto-Fill ─────────────────────────────────────────
+    if (action === "complete-resume") {
+      const system = `You are an expert resume writer. Based on minimal user input (name, title, any experience provided), generate a complete, professional resume structure.
+Fill ALL empty sections with realistic, high-quality professional content.
+Output ONLY valid JSON exactly matching this schema:
+{
+  "summary": "Professional summary...",
+  "suggestedBullets": { "0": ["bullet 1", "bullet 2", "bullet 3"] },
+  "skills": ["skill1", "skill2", ...],
+  "hobbies": ["hobby1", "hobby2", ...]
+}`;
+
+      const user = `Generate complete professional resume content for:
+Name: ${data.name || "Professional"}
+Title: ${data.title || "Professional"}
+Company: ${data.company || ""}
+Existing experience: ${JSON.stringify(data.experience || [])}
+Existing skills: ${(data.skills || []).join(", ")}
+Return ONLY valid JSON.`;
+
+      const text = await vogatsAIChat(system, user, true);
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { summary: "", suggestedBullets: {}, skills: [], hobbies: [] };
+      }
     }
 
     return { error: "Unknown AI action." };

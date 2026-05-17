@@ -1592,7 +1592,7 @@ export function SaurabhTemplate({ data }: { data: ResumeData }) {
             borderRadius: "4px",
             marginBottom: "16px"
           }}>
-            {basics.photo ? (
+            {isValidPhoto(basics.photo) ? (
               <img src={basics.photo} alt={basics.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <div style={{ color: "#718096", fontSize: "11px", fontWeight: "bold" }}>PHOTO</div>

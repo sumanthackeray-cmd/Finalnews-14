@@ -70,6 +70,11 @@ export function createSubscription(planId: PlanId, paymentId: string): Subscript
 }
 
 export function checkAccess(subscription: Subscription | null) {
+  // Allow free/unlimited downloads/access on localhost for seamless testing/development
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.includes("192.168."))) {
+    return { allowed: true, reason: "Local Dev/Testing Bypass Mode" };
+  }
+  
   if (!subscription) return { allowed: false, reason: "No active subscription" };
   const now = new Date();
   const expires = new Date(subscription.expiresAt);
@@ -96,21 +101,11 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
       return sub;
     }
   } catch (err) {
-    console.error("Failed to read user subscription, using fallback default:", err);
+    console.error("Failed to read user subscription:", err);
   }
   
-  // Return a robust default fallback active subscription so they can always edit/create resumes safely
-  return {
-    planId: "PRO",
-    paymentId: "fallback-default",
-    paidAmount: 149,
-    activatedAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    resumesUsed: 0,
-    resumeLimit: 49,
-    unlimited: false,
-    status: "ACTIVE"
-  };
+  // Return null so that free / unpaid users are strictly prompted to subscribe/pay as per site rules
+  return null;
 }
 
 export async function saveSubscription(userId: string, sub: Subscription) {
@@ -118,6 +113,7 @@ export async function saveSubscription(userId: string, sub: Subscription) {
     await setDoc(doc(db, "subscriptions", userId), sub);
   } catch (err) {
     console.error("Failed to save subscription:", err);
+    throw err;
   }
 }
 

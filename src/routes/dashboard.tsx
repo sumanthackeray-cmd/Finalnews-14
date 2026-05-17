@@ -125,7 +125,12 @@ function Dashboard() {
       nav({ to: "/resume/$id", params: { id: newId }, search: { template: template } });
     } catch (error: any) {
       console.error("Immediate create error:", error);
-      if (error.message?.includes("Database '(default)' not found")) {
+      if (error.message?.includes("permission") || error.code === "permission-denied" || error.message?.includes("Missing or insufficient permissions")) {
+        toast.error("Database Rule Error: Firestore rules are locked or not configured for 'vogats-news' in your Firebase Console.", {
+          description: "Please copy the rules from firestore.rules to the 'vogats-news' database in your Firebase Console > Rules tab.",
+          duration: 10000
+        });
+      } else if (error.message?.includes("Database '(default)' not found")) {
         toast.error("Database Error: Firestore has not been initialized in your Firebase Console.", {
           description: "Please go to Firebase Console > Firestore Database and click 'Create Database'.",
           duration: 8000
@@ -173,11 +178,24 @@ function Dashboard() {
   // Called by CheckoutModal after successful redirect (Cashfree handles the payment)
   const handlePaymentSuccess = useCallback(async (planId: PlanId, orderId: string) => {
     const sub = createSubscription(planId, orderId);
-    await saveSubscription(user!.uid, sub);
-    setSubscription(sub);
-    toast.success("🎉 Payment Successful!", {
-      description: `Your ${PLANS[planId].label} plan is now active.`
-    });
+    try {
+      await saveSubscription(user!.uid, sub);
+      setSubscription(sub);
+      toast.success("🎉 Payment Successful!", {
+        description: `Your ${PLANS[planId].label} plan is now active.`
+      });
+    } catch (error: any) {
+      console.error("Database subscription save error:", error);
+      // Still set it locally so they can proceed without being locked out due to DB rules!
+      setSubscription(sub);
+      toast.success("🎉 Payment Successful!", {
+        description: `Your ${PLANS[planId].label} plan is now active.`
+      });
+      toast.error("Database Error: Failed to save subscription in cloud.", {
+        description: "Your session is temporarily activated locally. Please ensure Firestore Security Rules are configured for 'vogats-news' database.",
+        duration: 15000
+      });
+    }
     setShowPayModal(null);
   }, [user]);
 
