@@ -36,32 +36,54 @@ export const Route = createFileRoute("/resume/$id")({
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 function downloadBlob(blob: Blob, filename: string) {
-  // Determine correct mime type based on filename extension to ensure
-  // Chrome falls back to the right extension if the user gesture expires.
-  const mimeType = filename.endsWith('.pdf') 
-    ? 'application/pdf' 
-    : filename.endsWith('.docx') 
-      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-      : blob.type || 'application/octet-stream';
-
-  const typedBlob = new Blob([blob], { type: mimeType });
   const reader = new FileReader();
-  
   reader.onloadend = () => {
-    const dataUrl = reader.result as string;
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = dataUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-    }, 250);
+    try {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(",")[1];
+      
+      const form = document.createElement("form");
+      form.action = "/api/download";
+      form.method = "POST";
+      form.style.display = "none";
+
+      const addInput = (name: string, value: string) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      };
+
+      addInput("base64", base64);
+      addInput("filename", filename);
+      addInput("mimeType", blob.type);
+
+      document.body.appendChild(form);
+      form.submit();
+      
+      setTimeout(() => {
+        if (document.body.contains(form)) {
+          document.body.removeChild(form);
+        }
+      }, 500);
+    } catch (e) {
+      console.error("Vercel download API fallback:", e);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 150);
+    }
   };
   
-  // Convert to Base64 Data URL so there is no UUID in the URL
-  reader.readAsDataURL(typedBlob);
+  reader.readAsDataURL(blob);
 }
 
 function Builder() {
