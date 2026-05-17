@@ -60,6 +60,17 @@ export function Templates() {
             </div>
           ))}
         </div>
+
+        {/* CTA to separate templates page */}
+        <div className="flex justify-center mt-14">
+          <button 
+            onClick={() => navigate({ to: "/templates" })}
+            className="btn-premium px-10 py-4 font-bold text-sm tracking-wider flex items-center gap-2 group shadow-xl"
+          >
+            Explore All 10 Premium Templates 
+            <ArrowUpRight className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+          </button>
+        </div>
       </div>
     </section>
   );
