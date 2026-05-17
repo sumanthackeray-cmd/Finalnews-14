@@ -1150,6 +1150,274 @@ function SophiaSidebarSection({ icon, title, children }: { icon: string; title: 
   );
 }
 
+
+/* ============== TURQUOISE SIDEBAR (Vibrant Turquoise Two-Column) ============== */
+export function TurquoiseTemplate({ data }: { data: ResumeData }) {
+  const { basics, experience, education, skills, projects, languages } = data;
+  
+  // Custom fallback achievements if achievements field is empty to populate the gorgeous designs
+  const achievementsList = data.achievements && data.achievements.length > 0 
+    ? data.achievements 
+    : (data.projects && data.projects.length > 0
+      ? data.projects.map(p => `${p.name}: ${p.description}`)
+      : [
+          "Awarded for outstanding performance of the month by XYZ Pvt. Ltd.",
+          "Won second prize in national video making competition, 'A day in the life of India' held by XYZ Company.",
+          "Won second and third prize for advertising making competition for energy drink 'Tzinga'.",
+          "Won third prize in intra college competition at XYZ, Mumbai."
+        ]);
+
+  // Fallback skills if empty
+  const skillsList = skills && skills.length > 0
+    ? skills
+    : [
+        "Business Strategy", "Finance Control", "Credit Underwriting",
+        "Collection", "Recovery", "Audit & Compliance",
+        "Account reconciliation", "Customs procedures", "Debtors / Creditors", "Banking"
+      ];
+
+  // Helper for left-column headers
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div style={{ marginBottom: "16px", marginTop: "12px" }}>
+      <div style={{
+        border: "1px solid #b0cdda",
+        borderRadius: "4px",
+        padding: "6px 24px",
+        background: "linear-gradient(180deg, #f0f8ff 0%, #e6f2ff 100%)",
+        boxShadow: "0 2px 4px rgba(15,80,100,0.06)",
+        display: "inline-block",
+        minWidth: "160px",
+        textAlign: "center",
+        fontWeight: 700,
+        color: "#1c6075",
+        fontSize: "12px",
+        letterSpacing: "0.08em",
+        textTransform: "uppercase"
+      }}>
+        {title}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "64% 36%",
+      background: "white",
+      color: "#222",
+      fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif",
+      minHeight: "1160px",
+      fontSize: "11px",
+      lineHeight: "1.5"
+    }}>
+      {/* Left Column (Main Content) */}
+      <main style={{ padding: "40px 30px 40px 40px", background: "white" }}>
+        
+        {/* Objective */}
+        <section style={{ marginBottom: "28px" }}>
+          <SectionHeader title="Objective" />
+          <p style={{ 
+            color: "#333", 
+            fontSize: "11px", 
+            lineHeight: "1.6", 
+            textAlign: "justify",
+            fontWeight: 400
+          }}>
+            {basics.summary || "Analytical & detail oriented Assistant Manager (buying & retail operation). Posses Solid Track record of simultaneously maximize unit volume & profits. Demonstrated expertise in evaluating & implementing trends, Sales, OTB, Markdowns & Seasonal Strategies."}
+          </p>
+        </section>
+
+        {/* Job Responsibility */}
+        {experience && experience.length > 0 && (
+          <section style={{ marginBottom: "28px" }}>
+            <SectionHeader title="Job Responsibility" />
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {experience.map((exp, idx) => (
+                <div key={exp.id || idx}>
+                  <p style={{ fontWeight: 700, fontSize: "11.5px", color: "#111", marginBottom: "4px" }}>
+                    {idx + 1} &nbsp; {exp.role || "Job Role"} {exp.company && `at ${exp.company}`}
+                  </p>
+                  <ul style={{ listStyleType: "disc", paddingLeft: "24px", margin: "4px 0 0 0", display: "flex", flexDirection: "column", gap: "3px" }}>
+                    {exp.bullets && exp.bullets.filter(Boolean).map((bullet, bIdx) => (
+                      <li key={bIdx} style={{ color: "#333", fontSize: "10.5px", lineHeight: "1.5" }}>
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Experience (Timeline summary) */}
+        {experience && experience.length > 0 && (
+          <section style={{ marginBottom: "28px" }}>
+            <SectionHeader title="Experience" />
+            <ul style={{ listStyleType: "disc", paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {experience.map((exp, idx) => (
+                <li key={exp.id || idx} style={{ color: "#333", fontSize: "11px", lineHeight: "1.5" }}>
+                  <strong>Working at {exp.company || "XYZ Company"}</strong>
+                  {exp.location && `, ${exp.location}`} as <strong>{exp.role}</strong>
+                  {(exp.start || exp.end) && ` — From ${exp.start || "N/A"} to ${exp.end || "Present"}`}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Achievements */}
+        <section style={{ marginBottom: "20px" }}>
+          <SectionHeader title="Achievement" />
+          <ul style={{ listStyleType: "disc", paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            {achievementsList.map((ach, idx) => (
+              <li key={idx} style={{ color: "#333", fontSize: "11px", lineHeight: "1.5" }}>
+                {ach}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+      </main>
+
+      {/* Right Column (Sidebar) */}
+      <aside style={{
+        background: "#3ba7c4",
+        color: "white",
+        padding: "40px 24px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
+      }}>
+        
+        {/* Photo Box */}
+        <div style={{
+          width: "160px",
+          height: "190px",
+          background: "#e2e8f0",
+          border: "8px solid white",
+          boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "1px"
+        }}>
+          {basics.photo ? (
+            <img src={basics.photo} alt={basics.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ color: "#718096", fontSize: "11px", fontWeight: "bold" }}>PHOTO</div>
+          )}
+        </div>
+
+        {/* Name Tag */}
+        <div style={{
+          background: "white",
+          border: "1px solid rgba(0,0,0,0.06)",
+          borderRadius: "2px",
+          padding: "8px 20px",
+          boxShadow: "0 3px 8px rgba(0,0,0,0.15)",
+          color: "#1c6075",
+          fontWeight: 800,
+          fontSize: "14px",
+          textAlign: "center",
+          marginTop: "16px",
+          display: "inline-block",
+          width: "90%",
+          letterSpacing: "0.03em"
+        }}>
+          {basics.name || "Saurabh Kumar"}
+        </div>
+
+        {/* Sidebar Info Section */}
+        <div style={{ width: "100%", marginTop: "32px", display: "flex", flexDirection: "column", gap: "28px" }}>
+          
+          {/* Skills */}
+          <div>
+            <h3 style={{
+              fontSize: "14px",
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              borderBottom: "1px solid rgba(255,255,255,0.3)",
+              paddingBottom: "4px",
+              marginBottom: "8px",
+              textTransform: "uppercase"
+            }}>
+              Skills
+            </h3>
+            <p style={{ fontSize: "11px", fontWeight: 700, margin: "6px 0 2px 0", color: "rgba(255,255,255,0.85)" }}>
+              Professional
+            </p>
+            <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
+              {skillsList.map((skill, i) => (
+                <li key={i} style={{ fontSize: "11px", color: "#f0f9fa", fontWeight: 500 }}>
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Related Skills (or Languages) */}
+          {languages && languages.length > 0 && (
+            <div>
+              <h3 style={{
+                fontSize: "13px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                borderBottom: "1px solid rgba(255,255,255,0.3)",
+                paddingBottom: "4px",
+                marginBottom: "8px",
+                textTransform: "uppercase"
+              }}>
+                Related Skills
+              </h3>
+              <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
+                {languages.map((lang, i) => (
+                  <li key={i} style={{ fontSize: "11px", color: "#f0f9fa" }}>
+                    {lang}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Education */}
+          {education && education.length > 0 && (
+            <div>
+              <h3 style={{
+                fontSize: "14px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                borderBottom: "1px solid rgba(255,255,255,0.3)",
+                paddingBottom: "4px",
+                marginBottom: "12px",
+                textTransform: "uppercase"
+              }}>
+                Education
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {education.map((edu, idx) => (
+                  <div key={edu.id || idx}>
+                    <p style={{ fontWeight: 700, fontSize: "11px", color: "white", lineHeight: "1.4" }}>
+                      {edu.degree || "Degree"}
+                    </p>
+                    <p style={{ fontSize: "10.5px", color: "#e6f7fa", marginTop: "2px", lineHeight: "1.4" }}>
+                      from {edu.school || "School"}
+                      {edu.end && ` in ${edu.end}`}
+                      {edu.notes && ` with ${edu.notes}`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 export const TEMPLATES = [
   { id: "modern", name: "Modern", component: ModernTemplate },
   { id: "classic", name: "Classic", component: ClassicTemplate },
@@ -1160,6 +1428,7 @@ export const TEMPLATES = [
   { id: "slater", name: "Slater", component: SlaterTemplate },
   { id: "watson", name: "Watson", component: WatsonTemplate },
   { id: "sophia", name: "Sophia", component: SophiaTemplate },
+  { id: "turquoise", name: "Turquoise Sidebar", component: TurquoiseTemplate },
 ] as const;
 
 export type TemplateId = typeof TEMPLATES[number]["id"];
