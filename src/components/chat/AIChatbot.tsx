@@ -12,6 +12,8 @@ import { generateAIContent } from "@/lib/ai-service";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { collection, query, where, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface Message {
   id: string;
@@ -198,6 +200,114 @@ export function AIChatbot() {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const lastScrollTopRef = useRef(0);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const loadSessions = async () => {
+    if (!user) return;
+    setLoadingHistory(true);
+    try {
+      const q = query(
+        collection(db, "chat_sessions"),
+        where("userId", "==", user.uid)
+      );
+      const snap = await getDocs(q);
+      const list = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+      list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      setSessions(list);
+    } catch (err) {
+      console.error("Error loading chat sessions:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadSessions();
+    } else {
+      setSessions([]);
+      setCurrentSessionId(null);
+    }
+  }, [user]);
+
+  const handleNewChat = () => {
+    setMessages([
+      {
+        id: "initial-assistant",
+        role: "assistant",
+        content: "Hi! I'm Vogats AI. How can I help you build, optimize, or tailor your resume today?",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+    setCurrentSessionId(null);
+    setHistoryOpen(false);
+    toast.success("Started a new chat session!");
+  };
+
+  const handleSelectSession = (session: any) => {
+    setMessages(session.messages || []);
+    setCurrentSessionId(session.id);
+    setHistoryOpen(false);
+    toast.success(`Loaded session: ${session.title}`);
+  };
+
+  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await deleteDoc(doc(db, "chat_sessions", sessionId));
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+      if (currentSessionId === sessionId) {
+        handleNewChat();
+      }
+      toast.success("Chat conversation deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting session:", err);
+      toast.error("Failed to delete chat conversation");
+    }
+  };
+
+  const saveSession = async (currentMsgs: Message[]) => {
+    if (!user) return;
+    let sessionId = currentSessionId;
+    let isNew = false;
+    if (!sessionId) {
+      sessionId = `session-${Date.now()}`;
+      setCurrentSessionId(sessionId);
+      isNew = true;
+    }
+
+    const userMsgs = currentMsgs.filter(m => m.role === "user");
+    const titleText = userMsgs.length > 0 
+      ? (userMsgs[0].content.substring(0, 30) + (userMsgs[0].content.length > 30 ? "..." : ""))
+      : "New Conversation";
+
+    try {
+      const sessionDocRef = doc(db, "chat_sessions", sessionId);
+      const sessionData = {
+        id: sessionId,
+        userId: user.uid,
+        title: titleText,
+        messages: currentMsgs,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      await setDoc(sessionDocRef, sessionData, { merge: true });
+      setSessions(prev => {
+        const filtered = prev.filter(s => s.id !== sessionId);
+        return [sessionData, ...filtered];
+      });
+    } catch (err) {
+      console.error("Failed to save chat session to Firestore:", err);
+    }
+  };
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -402,6 +512,7 @@ export function AIChatbot() {
           if (last && last.id === newMsgId) {
             last.isStreaming = false;
           }
+          saveSession(updated);
           return updated;
         });
         return;
@@ -441,17 +552,21 @@ export function AIChatbot() {
     setUserHasScrolledUp(false);
     setShowScrollBottom(false);
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: messageToSend,
-        timestamp,
-        attachmentName: fileToPill?.name,
-        attachmentType: fileToPill?.type
-      }
-    ]);
+    setMessages((prev) => {
+      const updated = [
+        ...prev,
+        {
+          id: `user-${Date.now()}`,
+          role: "user",
+          content: messageToSend,
+          timestamp,
+          attachmentName: fileToPill?.name,
+          attachmentType: fileToPill?.type
+        }
+      ];
+      saveSession(updated);
+      return updated;
+    });
     setIsLoading(true);
 
     try {
@@ -636,6 +751,18 @@ export function AIChatbot() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            {user && (
+              <button 
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className={cn(
+                  "w-5 h-5 flex items-center justify-center rounded transition-colors",
+                  historyOpen ? "text-accent bg-accent/10" : "text-muted hover:bg-surface"
+                )}
+                title="Chat History"
+              >
+                <MessageSquare className="w-3 h-3" />
+              </button>
+            )}
             <button 
               onClick={() => setIsFullScreen(!isFullScreen)}
               className="hidden md:flex w-5 h-5 items-center justify-center rounded text-muted hover:bg-surface transition-colors"
@@ -684,8 +811,64 @@ export function AIChatbot() {
       )}
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden relative">
-        {activeTab === "chat" && (
+      <div className="flex-1 overflow-hidden relative flex">
+        {/* Chat History Panel (Drawer) */}
+        {user && historyOpen && (
+          <div 
+            className="absolute md:relative inset-y-0 left-0 w-full md:w-[280px] h-full z-30 border-r border-border shrink-0 flex flex-col animate-in slide-in-from-left duration-300 shadow-xl md:shadow-none"
+            style={{ backgroundColor: "var(--card)" }}
+          >
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-text">Chat History</span>
+              <button 
+                onClick={handleNewChat}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 hover:bg-accent/10 text-xs font-bold text-accent transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> New Chat
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-2 space-y-1 chat-scrollbar">
+              {loadingHistory ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                </div>
+              ) : sessions.length === 0 ? (
+                <div className="text-center py-8 text-xs text-muted font-medium">
+                  No past conversations.
+                </div>
+              ) : (
+                sessions.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => handleSelectSession(s)}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group/item text-left text-xs",
+                      currentSessionId === s.id 
+                        ? "bg-accent/10 text-accent font-bold" 
+                        : "text-text hover:bg-surface font-medium"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0 text-muted group-hover/item:text-accent" />
+                      <span className="truncate">{s.title || "Conversation"}</span>
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteSession(s.id, e)}
+                      className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-destructive/10 rounded text-muted hover:text-destructive transition-all"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Main Interface Content */}
+        <div className="flex-1 flex flex-col relative overflow-hidden h-full">
+          {activeTab === "chat" && (
           <div className="h-full relative flex flex-col">
             <div 
               ref={scrollRef}
@@ -1083,6 +1266,7 @@ export function AIChatbot() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Input Bar - Only for Chat */}

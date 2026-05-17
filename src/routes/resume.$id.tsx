@@ -122,6 +122,23 @@ function Builder() {
   const update = <K extends keyof ResumeData>(k: K, v: ResumeData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
 
+  const updateBasicsPhoto = async (photoBase64: string | undefined) => {
+    update("basics", { ...data.basics, photo: photoBase64 });
+    if (user && photoBase64) {
+      try {
+        const { updateProfile } = await import("firebase/auth");
+        await updateProfile(user, { photoURL: photoBase64 });
+        await updateDoc(doc(db, "users", user.uid), {
+          photoURL: photoBase64,
+          updatedAt: new Date().toISOString()
+        });
+        toast.success("Profile picture updated and synced successfully!");
+      } catch (err: any) {
+        console.error("Failed to sync profile picture:", err);
+      }
+    }
+  };
+
   const aiAssist = async (action: string, payload: any) => {
     setAiBusy(action + (payload?.id ?? ""));
     try {
@@ -416,7 +433,7 @@ function Builder() {
             <TabsContent value="basics" className="space-y-3 mt-4">
               <PhotoField
                 value={data.basics.photo}
-                onChange={(v) => update("basics", { ...data.basics, photo: v })}
+                onChange={updateBasicsPhoto}
               />
               {(["name", "title", "email", "phone", "location", "website"] as const).map((k) => (
                 <Field key={k} label={k} value={data.basics[k]} onChange={(v) => update("basics", { ...data.basics, [k]: v })} />
