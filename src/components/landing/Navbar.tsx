@@ -144,6 +144,14 @@ export function Navbar() {
                 <span className="text-xl w-6">📬</span>
                 Contact
               </Link>
+              <Link
+                to="/about"
+                className="flex items-center gap-4 px-6 py-4 text-[15px] font-bold text-text/80 hover:text-accent hover:bg-accent/5 transition-all border-l-4 border-transparent hover:border-accent"
+                onClick={closeMobileMenu}
+              >
+                <span className="text-xl w-6">🚀</span>
+                About Us
+              </Link>
             </nav>
 
             {/* Footer actions */}
@@ -227,6 +235,13 @@ export function Navbar() {
               className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
             >
               Contact
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
+            </Link>
+            <Link
+              to="/about"
+              className="text-[11px] font-black uppercase tracking-[0.2em] text-muted hover:text-accent transition-all duration-300 relative group/nav"
+            >
+              About
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover/nav:w-full" />
             </Link>
             <button
