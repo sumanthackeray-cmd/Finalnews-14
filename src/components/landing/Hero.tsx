@@ -42,11 +42,11 @@ export function Hero() {
                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 ease-in-out" />
               </button>
             </Link>
-            <a href="#templates" className="w-full sm:w-auto">
+            <Link to="/templates" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 rounded-2xl text-base md:text-lg font-bold text-text hover:bg-surface/80 transition-all border border-border bg-surface/30 backdrop-blur-sm">
                 View Templates
               </button>
-            </a>
+            </Link>
           </div>
           
           <div className="mt-10 md:mt-12 flex flex-wrap items-center justify-center gap-4 md:gap-8 text-muted animate-in fade-in duration-1000 delay-500">

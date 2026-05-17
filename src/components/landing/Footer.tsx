@@ -22,7 +22,7 @@ export function Footer() {
             <div className="flex flex-col gap-4">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Product</h4>
               <a href="#features" className="text-sm font-semibold text-text hover:text-accent transition-colors">Features</a>
-              <a href="#templates" className="text-sm font-semibold text-text hover:text-accent transition-colors">Templates</a>
+              <Link to="/templates" className="text-sm font-semibold text-text hover:text-accent transition-colors">Templates</Link>
               <a href="#pricing" className="text-sm font-semibold text-text hover:text-accent transition-colors">Pricing</a>
             </div>
             <div className="flex flex-col gap-4">
