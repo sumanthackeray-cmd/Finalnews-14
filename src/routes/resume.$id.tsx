@@ -22,6 +22,7 @@ import type { ResumeData } from "@/lib/resume-types";
 import { emptyResume, sampleResume } from "@/lib/resume-types";
 import { getUserSubscription, checkAccess, Subscription } from "@/lib/subscription";
 import { generateAIContent } from "@/lib/ai-service";
+import { generateResumeDocx } from "@/utils/generateDocx";
 
 export const Route = createFileRoute("/resume/$id")({
   head: () => ({ meta: [{ title: "Builder — Vogats CV" }] }),
@@ -35,55 +36,84 @@ export const Route = createFileRoute("/resume/$id")({
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-function downloadBlob(blob: Blob, filename: string) {
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    try {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(",")[1];
-      
-      const form = document.createElement("form");
-      form.action = "/api/download";
-      form.method = "POST";
-      form.style.display = "none";
-
-      const addInput = (name: string, value: string) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
+async function downloadBlob(blob: Blob, filename: string, userId?: string) {
+  try {
+    const reader = new FileReader();
+    const base64: string = await new Promise((resolve, reject) => {
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        resolve(dataUrl.split(",")[1]);
       };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
-      addInput("base64", base64);
-      addInput("filename", filename);
-      addInput("mimeType", blob.type);
+    const response = await fetch("/api/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64, filename, mimeType: blob.type, userId }),
+    });
 
-      document.body.appendChild(form);
-      form.submit();
-      
-      setTimeout(() => {
-        if (document.body.contains(form)) {
-          document.body.removeChild(form);
-        }
-      }, 500);
-    } catch (e) {
-      console.error("Vercel download API fallback:", e);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 150);
+    if (response.status === 403) {
+      const err = await response.json();
+      if (err.error === "PLAN_EXPIRED") {
+        toast.error("Download Blocked", {
+          description: err.message || "Your plan has expired. Please upgrade.",
+        });
+        window.location.href = "/dashboard?buy=PRO";
+        return;
+      }
     }
-  };
-  
-  reader.readAsDataURL(blob);
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || "Download failed");
+    }
+
+    // Trigger file download in browser
+    const resBlob = await response.blob();
+    const url = URL.createObjectURL(resBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    // Track download count and logs in Firestore
+    if (userId) {
+      const { doc, updateDoc, setDoc, collection, increment } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        downloadCount: increment(1),
+        lastDownloadAt: new Date().toISOString()
+      }).catch(err => console.error("[Download Track Error]:", err));
+
+      const logRef = doc(collection(db, "download_logs"));
+      await setDoc(logRef, {
+        userId,
+        filename,
+        fileType: filename.endsWith(".pdf") ? "pdf" : "docx",
+        downloadedAt: new Date().toISOString()
+      }).catch(err => console.error("[Download Log Error]:", err));
+    }
+  } catch (e: any) {
+    console.error("Vercel download API fallback:", e);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
+  }
 }
 
 function Builder() {
@@ -485,7 +515,7 @@ function Builder() {
       const imgData = canvas.toDataURL("image/jpeg", 0.96);
       pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89);
       const blob = pdf.output("blob");
-      downloadBlob(blob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.pdf`);
+      downloadBlob(blob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.pdf`, user?.uid);
       toast.success("Cover letter PDF downloaded!");
     } catch (error: any) {
       console.error("Cover letter PDF export error:", error);
@@ -568,7 +598,7 @@ function Builder() {
       });
 
       const docxBlob = await Packer.toBlob(doc);
-      downloadBlob(docxBlob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.docx`);
+      downloadBlob(docxBlob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.docx`, user?.uid);
       toast.success("Cover letter Word document downloaded!");
     } catch (error: any) {
       console.error("Cover letter Word export error:", error);
@@ -697,7 +727,7 @@ function Builder() {
       }
 
       const blob = pdf.output("blob");
-      downloadBlob(blob, `${title || "resume"}.pdf`);
+      downloadBlob(blob, `${title || "resume"}.pdf`, user?.uid);
       toast.success("PDF downloaded successfully!");
     } catch (e: any) {
       console.error("[PDF Export Error]:", e);
@@ -727,44 +757,39 @@ function Builder() {
 
     setExporting(true);
     try {
-      const canvas = await renderCanvas();
-
-      // Use JPEG blob for DOCX too
-      const blob: Blob = await new Promise((res, rej) =>
-        canvas.toBlob(
-          (b) => (b ? res(b) : rej(new Error("Failed to generate image. Try removing profile photo."))),
-          "image/jpeg",
-          0.97,
-        ),
-      );
-      const buf = await blob.arrayBuffer();
-      const [{ Document, Packer, Paragraph, ImageRun }, { saveAs }] = await Promise.all([
-        import("docx"),
-        import("file-saver"),
-      ]);
-      const targetW = 550;
-      const targetH = Math.round((canvas.height / canvas.width) * targetW);
-      const doc = new Document({
-        sections: [
-          {
-            children: [
-              new Paragraph({
-                children: [
-                  new ImageRun({
-                    type: "jpg",
-                    data: buf,
-                    transformation: { width: targetW, height: targetH },
-                  } as any),
-                ],
-              }),
-            ],
-          },
-        ],
+      const base64 = await generateResumeDocx({
+        name: data.basics.name || "Untitled",
+        title: data.basics.title || "",
+        phone: data.basics.phone || "",
+        email: data.basics.email || "",
+        summary: data.basics.summary || "",
+        skills: data.skills || [],
+        hobbies: data.hobbies || [],
+        education: (data.education || []).map((edu) => ({
+          degree: edu.degree || "",
+          school: edu.school || "",
+          year: edu.start && edu.end ? `${edu.start} - ${edu.end}` : (edu.start || edu.end || ""),
+        })),
+        experience: (data.experience || []).map((exp) => ({
+          role: exp.role || "",
+          company: exp.company || "",
+          period: exp.start && exp.end ? `${exp.start} - ${exp.end}` : (exp.start || exp.end || ""),
+          bullets: exp.bullets || [],
+        })),
       });
-      const out = await Packer.toBlob(doc);
-      downloadBlob(out, `${title || "resume"}.docx`);
+
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const docxBlob = new Blob([byteArray], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+      downloadBlob(docxBlob, `${title || "resume"}.docx`, user?.uid);
       toast.success("Word document downloaded successfully!");
     } catch (e: any) {
+      console.error("[DOCX Export Error]:", e);
       toast.error(e.message ?? "DOCX export failed");
     } finally {
       setExporting(false);

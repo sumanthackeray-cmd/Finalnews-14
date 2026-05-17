@@ -31,7 +31,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Resume = { id: string; title: string; templateId: string; updatedAt: string; data: ResumeData };
-type ProfileData = { displayName: string; email: string; photoURL?: string; createdAt: string; resumeCount: number };
+type ProfileData = { displayName: string; email: string; photoURL?: string; createdAt: string; resumeCount: number; downloadCount: number };
 
 function Dashboard() {
   const { user, loading, signOut } = useAuth();
@@ -79,7 +79,8 @@ function Dashboard() {
           email: p.email || user.email || "",
           photoURL: p.photoURL || user.photoURL || undefined,
           createdAt: p.createdAt || new Date().toISOString(),
-          resumeCount: resumeData.length
+          resumeCount: resumeData.length,
+          downloadCount: p.downloadCount || p.download_count || 0
         });
       } else {
         setProfile({
@@ -87,7 +88,8 @@ function Dashboard() {
           email: user.email || "",
           photoURL: user.photoURL || undefined,
           createdAt: new Date().toISOString(),
-          resumeCount: resumeData.length
+          resumeCount: resumeData.length,
+          downloadCount: 0
         });
       }
       
@@ -267,7 +269,7 @@ function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 fade-in">
           {[
             { num: resumes.length, label: "Resumes" },
-            { num: "0", label: "Downloads" },
+            { num: profile?.downloadCount ?? 0, label: "Downloads" },
             { num: "18+", label: "Templates" }
           ].map((s, i) => (
             <div key={i} className="p-5 bg-card border border-border rounded-2xl text-center relative overflow-hidden group hover:border-accent transition-colors">
