@@ -485,14 +485,20 @@ function Builder() {
     }
 
     setExporting(true);
+    let prevTransform = "";
+    let restoreImages = () => {};
     try {
       const node = document.getElementById("cover-letter-preview-node");
       if (!node) {
         throw new Error("Please generate a cover letter first to view and download it.");
       }
 
+      // Reset on-screen scale so the export captures at full 820px width
+      prevTransform = node.style.transform;
+      node.style.transform = "none";
+
       // Hide all invalid photos before canvas render
-      const restoreImages = sanitizeImagesForExport(node);
+      restoreImages = sanitizeImagesForExport(node);
 
       const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
         import("html2canvas-pro"),
@@ -509,18 +515,21 @@ function Builder() {
         logging: false,
       });
 
-      restoreImages();
-
       const pdf = new jsPDF({ unit: "pt", format: "a4" });
       const imgData = canvas.toDataURL("image/jpeg", 0.96);
       pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89);
       const blob = pdf.output("blob");
-      downloadBlob(blob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.pdf`, user?.uid);
+      await downloadBlob(blob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.pdf`, user?.uid);
       toast.success("Cover letter PDF downloaded!");
     } catch (error: any) {
       console.error("Cover letter PDF export error:", error);
       toast.error(error.message || "Failed to download cover letter PDF");
     } finally {
+      const node = document.getElementById("cover-letter-preview-node");
+      if (node && prevTransform) {
+        node.style.transform = prevTransform;
+      }
+      restoreImages();
       setExporting(false);
     }
   };
@@ -540,14 +549,20 @@ function Builder() {
     }
 
     setExporting(true);
+    let prevTransform = "";
+    let restoreImages = () => {};
     try {
       const node = document.getElementById("cover-letter-preview-node");
       if (!node) {
         throw new Error("Please generate a cover letter first to view and download it.");
       }
 
+      // Reset on-screen scale so the export captures at full 820px width
+      prevTransform = node.style.transform;
+      node.style.transform = "none";
+
       // Hide all invalid photos before canvas render
-      const restoreImages = sanitizeImagesForExport(node);
+      restoreImages = sanitizeImagesForExport(node);
 
       const [{ default: html2canvas }, { Document, Packer, Paragraph, ImageRun }, { saveAs }] = await Promise.all([
         import("html2canvas-pro"),
@@ -564,8 +579,6 @@ function Builder() {
         height: 1160,
         logging: false,
       });
-
-      restoreImages();
 
       // Use JPEG blob for high quality Word document insertion
       const blob: Blob = await new Promise((res, rej) =>
@@ -598,12 +611,17 @@ function Builder() {
       });
 
       const docxBlob = await Packer.toBlob(doc);
-      downloadBlob(docxBlob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.docx`, user?.uid);
+      await downloadBlob(docxBlob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.docx`, user?.uid);
       toast.success("Cover letter Word document downloaded!");
     } catch (error: any) {
       console.error("Cover letter Word export error:", error);
       toast.error(error.message || "Failed to download cover letter as Word");
     } finally {
+      const node = document.getElementById("cover-letter-preview-node");
+      if (node && prevTransform) {
+        node.style.transform = prevTransform;
+      }
+      restoreImages();
       setExporting(false);
     }
   };
