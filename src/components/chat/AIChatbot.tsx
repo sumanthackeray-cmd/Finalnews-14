@@ -304,9 +304,14 @@ export function AIChatbot() {
 
   const handleEditMessage = (content: string) => {
     setInput(content);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Move selection cursor to the absolute end of the message text
+        const len = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(len, len);
+      }
+    }, 50);
   };
 
   const copyToClipboard = (text: string, msgId: string) => {
@@ -499,7 +504,7 @@ export function AIChatbot() {
                       <div 
                         key={msg.id || i} 
                         className={cn(
-                          "flex flex-col gap-2 group/msg",
+                          "flex flex-col gap-2 group/msg overflow-visible w-full",
                           isUser ? "items-end" : "items-start",
                           "animate-in fade-in slide-in-from-bottom-3 duration-300"
                         )}
@@ -604,93 +609,91 @@ export function AIChatbot() {
                           </div>
                         </div>
 
-                        {/* Action buttons below bubble */}
-                        <div className="flex items-center gap-2 px-1 text-muted text-[10px]">
+                        {/* Action buttons strictly below bubble */}
+                        <div className={cn("flex flex-wrap items-center gap-2 mt-1.5 overflow-visible z-10 w-full", isUser ? "justify-end" : "justify-start")}>
                           {isUser ? (
-                            <div className="flex items-center gap-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
+                            <>
                               <button
                                 onClick={() => copyToClipboard(msg.content, msg.id)}
-                                className="flex items-center gap-1 hover:text-text border border-border/30 px-2 py-0.5 rounded-full hover:bg-soft transition-all"
+                                className="h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center gap-1.5 text-muted hover:text-text hover:bg-surface hover:shadow-md hover:border-accent-solid/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                                 title="Copy prompt"
                               >
                                 {copiedId === msg.id ? (
                                   <>
-                                    <Check className="w-3 h-3 text-emerald-500" />
-                                    <span className="text-emerald-500 font-bold">Copied</span>
+                                    <Check className="w-3.5 h-3.5 text-emerald-500 animate-[scale_0.2s]" />
+                                    <span className="text-emerald-500 font-black">Copied ✓</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Copy className="w-3 h-3" />
+                                    <Copy className="w-3.5 h-3.5" />
                                     <span>Copy</span>
                                   </>
                                 )}
                               </button>
                               <button
                                 onClick={() => handleEditMessage(msg.content)}
-                                className="flex items-center gap-1 hover:text-text border border-border/30 px-2 py-0.5 rounded-full hover:bg-soft transition-all"
+                                className="h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center gap-1.5 text-muted hover:text-text hover:bg-surface hover:shadow-md hover:border-accent-solid/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                                 title="Edit prompt"
                               >
-                                <Pencil className="w-3 h-3" />
+                                <Pencil className="w-3.5 h-3.5" />
                                 <span>Edit</span>
                               </button>
-                              <span className="opacity-50">•</span>
-                              <span className="font-semibold uppercase tracking-wider">{msg.timestamp}</span>
-                            </div>
+                              <span className="text-[9px] text-muted/60 font-semibold uppercase tracking-wider ml-1 self-center">{msg.timestamp}</span>
+                            </>
                           ) : (
-                            <div className="flex items-center gap-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
+                            <>
                               <button
                                 onClick={() => copyToClipboard(msg.content, msg.id)}
-                                className="flex items-center gap-1 hover:text-text border border-border/30 px-2 py-0.5 rounded-full hover:bg-soft transition-all"
+                                className="h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center gap-1.5 text-muted hover:text-text hover:bg-surface hover:shadow-md hover:border-accent-solid/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                                 title="Copy answer"
                               >
                                 {copiedId === msg.id ? (
                                   <>
-                                    <Check className="w-3 h-3 text-emerald-500" />
-                                    <span className="text-emerald-500 font-bold">Copied</span>
+                                    <Check className="w-3.5 h-3.5 text-emerald-500 animate-[scale_0.2s]" />
+                                    <span className="text-emerald-500 font-black">Copied ✓</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Copy className="w-3 h-3" />
+                                    <Copy className="w-3.5 h-3.5" />
                                     <span>Copy</span>
                                   </>
                                 )}
                               </button>
                               
-                              {/* Regenerate for last AI response */}
                               {isLastAssistant && (
                                 <button
                                   onClick={handleRegenerate}
-                                  className="flex items-center gap-1 hover:text-text border border-border/30 px-2 py-0.5 rounded-full hover:bg-soft transition-all"
+                                  className="h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center gap-1.5 text-muted hover:text-text hover:bg-surface hover:shadow-md hover:border-accent-solid/30 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
                                   title="Regenerate answer"
                                 >
-                                  <RotateCcw className="w-3 h-3" />
+                                  <RotateCcw className="w-3.5 h-3.5" />
                                   <span>Retry</span>
                                 </button>
                               )}
 
-                              {/* Interactive feedbacks */}
                               <button
                                 onClick={() => setThumbsFeedback(prev => ({ ...prev, [msg.id]: "up" }))}
                                 className={cn(
-                                  "hover:text-text transition-colors",
-                                  thumbsFeedback[msg.id] === "up" && "text-emerald-500 hover:text-emerald-600 scale-110"
+                                  "h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center justify-center text-muted hover:text-emerald-500 hover:bg-surface hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer",
+                                  thumbsFeedback[msg.id] === "up" && "text-emerald-500 bg-surface border-emerald-500/35"
                                 )}
+                                title="Thumbs up"
                               >
-                                <ThumbsUp className="w-3 h-3" />
+                                <ThumbsUp className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => setThumbsFeedback(prev => ({ ...prev, [msg.id]: "down" }))}
                                 className={cn(
-                                  "hover:text-text transition-colors",
-                                  thumbsFeedback[msg.id] === "down" && "text-red-500 hover:text-red-600 scale-110"
+                                  "h-8 px-2.5 rounded-full bg-card/60 dark:bg-card/35 backdrop-blur-sm border border-border/50 flex items-center justify-center text-muted hover:text-red-500 hover:bg-surface hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer",
+                                  thumbsFeedback[msg.id] === "down" && "text-red-500 bg-surface border-red-500/35"
                                 )}
+                                title="Thumbs down"
                               >
-                                <ThumbsDown className="w-3 h-3" />
+                                <ThumbsDown className="w-3.5 h-3.5" />
                               </button>
 
-                              <span className="opacity-50">•</span>
-                              <span className="font-semibold uppercase tracking-wider">{msg.timestamp}</span>
-                            </div>
+                              <span className="text-[9px] text-muted/60 font-semibold uppercase tracking-wider ml-1 self-center">{msg.timestamp}</span>
+                            </>
                           )}
                         </div>
                       </div>
