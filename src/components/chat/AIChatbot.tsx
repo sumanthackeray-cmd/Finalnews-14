@@ -20,6 +20,66 @@ interface Message {
   isStreaming?: boolean;
 }
 
+function getSuggestionsForResponse(content: string): string[] {
+  const text = content.toLowerCase();
+  
+  if (text.includes("react") || text.includes("hook") || text.includes("component")) {
+    return [
+      "Explain useEffect simply",
+      "Difference between useMemo and useCallback",
+      "Best React project ideas",
+      "Common React mistakes"
+    ];
+  }
+  if (text.includes("code") || text.includes("program") || text.includes("javascript") || text.includes("typescript") || text.includes("html") || text.includes("css")) {
+    return [
+      "Show complete example",
+      "Explain in simple words",
+      "Best practices for clean code",
+      "Common coding mistakes"
+    ];
+  }
+  if (text.includes("resume") || text.includes("cv") || text.includes("ats") || text.includes("profile")) {
+    return [
+      "Check my resume ATS score",
+      "Give me a professional summary rewrite",
+      "List top key skills to include",
+      "How to write quantified bullet points"
+    ];
+  }
+  if (text.includes("business") || text.includes("marketing") || text.includes("strategy") || text.includes("revenue")) {
+    return [
+      "Create a detailed strategy plan",
+      "Give me 5 unique marketing ideas",
+      "Explain business revenue models",
+      "Show real-world startup examples"
+    ];
+  }
+  if (text.includes("design") || text.includes("ui") || text.includes("ux") || text.includes("animation")) {
+    return [
+      "How to improve this UI design?",
+      "Add interactive micro-animations",
+      "Suggest a premium color palette",
+      "How to optimize for mobile screens?"
+    ];
+  }
+  if (text.includes("interview") || text.includes("prep") || text.includes("question") || text.includes("career")) {
+    return [
+      "Give me role-specific mock questions",
+      "How to prepare for coding interviews",
+      "Tell me how to use the STAR method",
+      "Write an elevator pitch for me"
+    ];
+  }
+  
+  return [
+    "Tell me more about this",
+    "Explain it to a beginner",
+    "Can you give me an example?",
+    "What are the best practices here?"
+  ];
+}
+
 export function AIChatbot() {
   const { user } = useAuth();
   const location = useLocation();
@@ -393,6 +453,10 @@ export function AIChatbot() {
           0%, 100% { opacity: 0.3; transform: scale(0.8); }
           50% { opacity: 1; transform: scale(1); }
         }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .chat-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -697,6 +761,28 @@ export function AIChatbot() {
                             </>
                           )}
                         </div>
+
+                        {/* Suggestion Chips Container strictly below bubble and action buttons */}
+                        {!isUser && isLastMsg && !isLoading && streamingIndex === null && (
+                          <div 
+                            className="mt-3 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full justify-start overflow-visible"
+                            style={{ animationDelay: "0.2s" }}
+                          >
+                            {getSuggestionsForResponse(msg.content).map((suggestion, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => handleSend(suggestion)}
+                                className="px-4 py-2 rounded-full bg-card/65 dark:bg-card/35 border border-border/60 hover:border-accent-solid/35 backdrop-blur-md text-xs font-bold text-muted hover:text-text hover:bg-surface hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+                                style={{
+                                  animation: `fadeInUp 0.4s ease-out both`,
+                                  animationDelay: `${idx * 0.08}s`
+                                }}
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })
