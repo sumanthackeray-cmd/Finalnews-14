@@ -38,14 +38,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-        if (redirect) window.location.href = redirect; // Force external/complex redirect if needed
-        else nav({ to: "/dashboard" });
-    }
-  }, [user, loading, nav, redirect]);
-
-  useEffect(() => {
-    const handleRedirectResult = async () => {
+    const handleAuthCheckAndRedirect = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
@@ -61,19 +54,26 @@ function AuthPage() {
               createdAt: new Date().toISOString(),
             });
           }
-          toast.success("Welcome to Vogats CV!");
+          toast.success("Welcome back to Vogats CV!");
           if (redirect) window.location.href = redirect;
           else nav({ to: "/dashboard" });
+          return;
         }
       } catch (err: any) {
-        console.error("Redirect error: ", err);
+        console.error("Redirect processing error:", err);
         toast.error(err.message ?? "Google sign in failed");
-      } finally {
         setBusy(false);
+        return;
+      }
+
+      if (!loading && user) {
+        if (redirect) window.location.href = redirect;
+        else nav({ to: "/dashboard" });
       }
     };
-    handleRedirectResult();
-  }, [nav, redirect]);
+
+    handleAuthCheckAndRedirect();
+  }, [user, loading, nav, redirect]);
 
   const handleGoogleSignIn = async () => {
     setBusy(true);
