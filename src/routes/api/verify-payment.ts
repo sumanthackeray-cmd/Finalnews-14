@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import crypto from "crypto";
 
-const KEY_SECRET = import.meta.env.RAZORPAY_KEY_SECRET as string;
+const KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || import.meta.env.RAZORPAY_KEY_SECRET) as string;
 
 export const APIRoute = createAPIFileRoute("/api/verify-payment")({
   POST: async ({ request }) => {

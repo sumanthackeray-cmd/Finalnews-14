@@ -2,8 +2,8 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import crypto from "crypto";
 
 // Server-side only — never exposed to frontend bundle
-const KEY_ID     = import.meta.env.RAZORPAY_KEY_ID     as string;
-const KEY_SECRET = import.meta.env.RAZORPAY_KEY_SECRET as string;
+const KEY_ID     = (process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || import.meta.env.VITE_RAZORPAY_KEY_ID || import.meta.env.RAZORPAY_KEY_ID) as string;
+const KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || import.meta.env.RAZORPAY_KEY_SECRET) as string;
 
 function generateReceiptId(planId: string): string {
   const ts   = Date.now();
