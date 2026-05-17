@@ -22,7 +22,7 @@ import type { ResumeData } from "@/lib/resume-types";
 import { emptyResume, sampleResume } from "@/lib/resume-types";
 import { getUserSubscription, checkAccess, Subscription } from "@/lib/subscription";
 import { generateAIContent } from "@/lib/ai-service";
-import { generateResumeDocx } from "@/utils/generateDocx";
+
 
 export const Route = createFileRoute("/resume/$id")({
   head: () => ({ meta: [{ title: "Builder — Vogats CV" }] }),
@@ -758,7 +758,7 @@ function Builder() {
   };
 
   const exportDOCX = async () => {
-    // DOCX download requires PRO or UNLIMITED plan
+    // DOCX download requires an active plan
     const access = checkAccess(subscription);
     if (!access.allowed) {
       toast.error("DOCX download requires an active plan", {
@@ -772,40 +772,51 @@ function Builder() {
       return;
     }
 
-
     setExporting(true);
     try {
-      const base64 = await generateResumeDocx({
-        name: data.basics.name || "Untitled",
-        title: data.basics.title || "",
-        phone: data.basics.phone || "",
-        email: data.basics.email || "",
-        summary: data.basics.summary || "",
-        skills: data.skills || [],
-        hobbies: data.hobbies || [],
-        education: (data.education || []).map((edu) => ({
-          degree: edu.degree || "",
-          school: edu.school || "",
-          year: edu.start && edu.end ? `${edu.start} - ${edu.end}` : (edu.start || edu.end || ""),
-        })),
-        experience: (data.experience || []).map((exp) => ({
-          role: exp.role || "",
-          company: exp.company || "",
-          period: exp.start && exp.end ? `${exp.start} - ${exp.end}` : (exp.start || exp.end || ""),
-          bullets: exp.bullets || [],
-        })),
+      // Screenshot the rendered template at full 820px resolution — pixel-perfect visual fidelity
+      const canvas = await renderCanvas();
+
+      // Convert to JPEG blob for maximum quality
+      const imgBlob: Blob = await new Promise((res, rej) =>
+        canvas.toBlob(
+          (b) => (b ? res(b) : rej(new Error("Canvas toBlob failed"))),
+          "image/jpeg",
+          0.97,
+        ),
+      );
+      const imgBuf = await imgBlob.arrayBuffer();
+
+      // Build a DOCX with the template image embedded as a full-page figure
+      const { Document, Packer, Paragraph, ImageRun, PageOrientation } = await import("docx");
+
+      // A4 in EMUs: 9906000 wide × 14031360 tall (portrait)
+      const emuW = 9144000; // ~10.16 cm inside margins ≈ full-width at 1-inch margins
+      const emuH = Math.round((canvas.height / canvas.width) * emuW);
+
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: [
+              new Paragraph({
+                spacing: { before: 0, after: 0 },
+                children: [
+                  new ImageRun({
+                    type: "jpg",
+                    data: imgBuf,
+                    transformation: { width: Math.round(emuW / 9144), height: Math.round(emuH / 9144) },
+                  } as any),
+                ],
+              }),
+            ],
+          },
+        ],
       });
 
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const docxBlob = new Blob([byteArray], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-
-      downloadBlob(docxBlob, `${title || "resume"}.docx`, user?.uid);
-      toast.success("Word document downloaded successfully!");
+      const docxBlob = await Packer.toBlob(doc);
+      await downloadBlob(docxBlob, `${title || "resume"}.docx`, user?.uid);
+      toast.success("Word document downloaded — exact template design preserved!");
     } catch (e: any) {
       console.error("[DOCX Export Error]:", e);
       toast.error(e.message ?? "DOCX export failed");
