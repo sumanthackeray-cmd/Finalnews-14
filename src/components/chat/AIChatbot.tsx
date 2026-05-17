@@ -168,7 +168,7 @@ export function AIChatbot() {
       <div className="fixed bottom-6 right-6 z-[999999] group/trigger">
         <button
           onClick={() => setIsVisible(false)}
-          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg opacity-0 group-hover/trigger:opacity-100 transition-all hover:scale-110 z-10"
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg opacity-100 transition-all hover:scale-110 z-10"
           title="Hide AI Assistant"
         >
           <X className="w-3 h-3" />
