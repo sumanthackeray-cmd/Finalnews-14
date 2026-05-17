@@ -1,7 +1,9 @@
 // @ts-ignore
 import app from '../dist/server/index.js';
 
-
+export const config = {
+  runtime: "edge"
+};
 
 export default async function handler(request: Request) {
   try {
@@ -14,3 +16,4 @@ export default async function handler(request: Request) {
     return new Response(`Server Error: ${error.message}`, { status: 500 });
   }
 }
+
