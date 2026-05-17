@@ -416,6 +416,7 @@ function Dashboard() {
               { id: "watson",   name: "Watson",        badge: "Pro",     tags: "professional" },
               { id: "sophia",   name: "Sophia",        badge: "Hot",     tags: "professional" },
               { id: "turquoise",name: "Turquoise Sidebar",badge: "Hot",  tags: "creative" },
+              { id: "saurabh",  name: "Saurabh Sidebar",  badge: "New",  tags: "creative" },
             ] as const).filter(t => filter === "all" || t.tags === filter).map((t) => (
               <div key={t.id} className="template-card bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-accent hover:-translate-y-1 transition-all group relative">
                 <TemplateThumb

@@ -24,6 +24,7 @@ const TEMPLATES = [
   { id: "modern",    name: "Modern Classic",    tag: "Professional", badge: "Free",    pop: 120000, desc: "Clean sidebar with soft accents. Corporate, finance & tech favourite." },
   { id: "classic",   name: "Classic Slate",     tag: "Professional", badge: "Free",    pop: 105000, desc: "Timeless elegance favoured by recruiters worldwide." },
   { id: "minimal",   name: "Minimalist",        tag: "Minimal",      badge: "Free",    pop: 92000,  desc: "Ultra-clean single column — let your work do the talking." },
+  { id: "saurabh",   name: "Saurabh Sidebar",   tag: "Creative",     badge: "New ✦",   pop: 95000,  desc: "Premium teal sidebar layout with white portrait card and elegant floating grids." },
   { id: "turquoise", name: "Turquoise Sidebar", tag: "Creative",     badge: "Hot 🔥",  pop: 88000,  desc: "Vibrant teal two-column layout with gradient header panels." },
   { id: "creative",  name: "Creative Dark",     tag: "Creative",     badge: "New ✦",   pop: 85000,  desc: "Bold dark theme with gradients. Perfect for designers & PMs." },
   { id: "designer",  name: "Designer Pro",      tag: "Creative",     badge: "Pro",     pop: 74000,  desc: "Artistic grid format with premium visual systems." },

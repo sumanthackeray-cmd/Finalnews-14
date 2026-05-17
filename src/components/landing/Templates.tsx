@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const ALL_TEMPLATES = [
   { id: "modern",    name: "Modern Classic",    tag: "Professional", pop: 120000, accent: "from-blue-500/15 to-indigo-500/15" },
   { id: "classic",   name: "Classic Slate",     tag: "Professional", pop: 105000, accent: "from-slate-500/15 to-blue-500/15" },
+  { id: "saurabh",   name: "Saurabh Sidebar",   tag: "Creative",     pop: 95000,  accent: "from-cyan-500/15 to-indigo-500/15" },
   { id: "turquoise", name: "Turquoise Sidebar", tag: "Creative",     pop: 88000,  accent: "from-teal-500/15 to-cyan-500/15" },
   { id: "minimal",   name: "Minimalist",        tag: "Minimal",      pop: 92000,  accent: "from-gray-400/15 to-zinc-500/15" },
   { id: "creative",  name: "Creative Dark",     tag: "Creative",     pop: 85000,  accent: "from-violet-500/15 to-purple-500/15" },

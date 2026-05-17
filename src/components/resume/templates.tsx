@@ -1418,6 +1418,377 @@ export function TurquoiseTemplate({ data }: { data: ResumeData }) {
   );
 }
 
+
+/* ============== SAURABH SIDEBAR (Teal Split Columns with Floating Cards) ============== */
+export function SaurabhTemplate({ data }: { data: ResumeData }) {
+  const { basics, experience, education, skills, projects, languages } = data;
+  
+  // Custom fallback achievements if achievements field is empty to populate the gorgeous designs
+  const achievementsList = data.achievements && data.achievements.length > 0 
+    ? data.achievements 
+    : (data.projects && data.projects.length > 0
+      ? data.projects.map(p => `${p.name}: ${p.description}`)
+      : [
+          "Awarded for outstanding performance of the month by XYZ Pvt. Ltd.",
+          "Won second prize in national video making competition, 'A day in the life of India' held by XYZ Company.",
+          "Won second and third prize for advertising making competition for energy drink 'Tzinga'.",
+          "Won third prize in intra college competition at XYZ, Mumbai."
+        ]);
+
+  // Fallback skills if empty
+  const skillsList = skills && skills.length > 0
+    ? skills
+    : [
+        "Business Strategy", "Finance Control", "Credit Underwriting",
+        "Collection", "Recovery", "Audit & Compliance",
+        "Account reconciliation", "Customs procedures", "Debtors / Creditors", "Banking"
+      ];
+
+  // Helper for left-column headers
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div style={{ marginBottom: "16px", marginTop: "12px" }}>
+      <div style={{
+        border: "1px solid #b0c8d6",
+        borderRadius: "4px",
+        padding: "6px 24px",
+        background: "linear-gradient(180deg, #e6f2f7 0%, #d0e4f0 100%)",
+        boxShadow: "0 2px 4px rgba(15,80,100,0.06)",
+        display: "inline-block",
+        minWidth: "160px",
+        textAlign: "center",
+        fontWeight: 700,
+        color: "#1c6075",
+        fontSize: "12px",
+        letterSpacing: "0.08em",
+        textTransform: "uppercase"
+      }}>
+        {title}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "65% 35%",
+      background: "white",
+      color: "#222",
+      fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif",
+      minHeight: "1160px",
+      fontSize: "11px",
+      lineHeight: "1.5"
+    }}>
+      {/* Left Column (Main Content) */}
+      <main style={{ padding: "40px 30px 40px 40px", background: "white" }}>
+        
+        {/* Objective */}
+        <section style={{ marginBottom: "28px" }}>
+          <SectionHeader title="Objective" />
+          <p style={{ 
+            color: "#333", 
+            fontSize: "11px", 
+            lineHeight: "1.6", 
+            textAlign: "justify",
+            fontWeight: 400
+          }}>
+            {basics.summary || "Analytical & detail oriented Assistant Manager (buying & retail operation). Posses Solid Track record of simultaneously maximize unit volume & profits. Demonstrated expertise in evaluating & implementing trends, Sales, OTB, Markdowns & Seasonal Strategies."}
+          </p>
+        </section>
+
+        {/* Job Responsibility */}
+        {experience && experience.length > 0 && (
+          <section style={{ marginBottom: "28px" }}>
+            <SectionHeader title="Job Responsibility" />
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {experience.map((exp, idx) => (
+                <div key={exp.id || idx}>
+                  <p style={{ fontWeight: 700, fontSize: "11.5px", color: "#111", marginBottom: "4px" }}>
+                    {idx + 1} &nbsp; {exp.role || "Job Role"} {exp.company && `at ${exp.company}`}
+                  </p>
+                  <ul style={{ listStyleType: "disc", paddingLeft: "24px", margin: "4px 0 0 0", display: "flex", flexDirection: "column", gap: "3px" }}>
+                    {exp.bullets && exp.bullets.filter(Boolean).map((bullet, bIdx) => (
+                      <li key={bIdx} style={{ color: "#333", fontSize: "10.5px", lineHeight: "1.5" }}>
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Experience (Timeline summary) */}
+        {experience && experience.length > 0 && (
+          <section style={{ marginBottom: "28px" }}>
+            <SectionHeader title="Experience" />
+            <ul style={{ listStyleType: "disc", paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {experience.map((exp, idx) => (
+                <li key={exp.id || idx} style={{ color: "#333", fontSize: "11px", lineHeight: "1.5" }}>
+                  <strong>Working at {exp.company || "XYZ Company"}</strong>
+                  {exp.location && `, ${exp.location}`} as <strong>{exp.role}</strong>
+                  {(exp.start || exp.end) && ` — From ${exp.start || "N/A"} to ${exp.end || "Present"}`}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Achievements */}
+        <section style={{ marginBottom: "20px" }}>
+          <SectionHeader title="Achievement" />
+          <ul style={{ listStyleType: "disc", paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            {achievementsList.map((ach, idx) => (
+              <li key={idx} style={{ color: "#333", fontSize: "11px", lineHeight: "1.5" }}>
+                {ach}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+      </main>
+
+      {/* Right Column (Sidebar) */}
+      <aside style={{
+        background: "#46a2c1",
+        color: "#222",
+        padding: "30px 20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px"
+      }}>
+        
+        {/* Card 1: Photo & Name */}
+        <div style={{
+          background: "white",
+          border: "1px solid #b0c8d6",
+          borderRadius: "8px",
+          padding: "20px 16px",
+          boxShadow: "0 4px 12px rgba(15,80,100,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}>
+          {/* Photo Frame */}
+          <div style={{
+            width: "140px",
+            height: "170px",
+            background: "#e6f2f7",
+            border: "6px solid white",
+            outline: "1px solid #b0c8d6",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "4px",
+            marginBottom: "16px"
+          }}>
+            {basics.photo ? (
+              <img src={basics.photo} alt={basics.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <div style={{ color: "#718096", fontSize: "11px", fontWeight: "bold" }}>PHOTO</div>
+            )}
+          </div>
+
+          {/* Name Tag */}
+          <div style={{
+            background: "linear-gradient(180deg, #e6f2f7 0%, #d0e4f0 100%)",
+            border: "1px solid #b0c8d6",
+            borderRadius: "4px",
+            padding: "8px 12px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+            color: "#1c6075",
+            fontWeight: 800,
+            fontSize: "13px",
+            textAlign: "center",
+            width: "100%",
+            letterSpacing: "0.03em",
+            textTransform: "uppercase"
+          }}>
+            {basics.name || "Saurabh Kumar"}
+          </div>
+          {basics.title && (
+            <p style={{
+              fontSize: "10px",
+              fontWeight: 600,
+              color: "#555250",
+              marginTop: "6px",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em"
+            }}>
+              {basics.title}
+            </p>
+          )}
+        </div>
+
+        {/* Card 2: Bottom Information Card */}
+        <div style={{
+          background: "white",
+          border: "1px solid #b0c8d6",
+          borderRadius: "8px",
+          padding: "24px 20px",
+          boxShadow: "0 4px 12px rgba(15,80,100,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px"
+        }}>
+          
+          {/* Contact Details */}
+          <div>
+            <h3 style={{
+              fontSize: "12px",
+              fontWeight: 800,
+              color: "#1c6075",
+              letterSpacing: "0.08em",
+              borderBottom: "1.5px solid #d0e4f0",
+              paddingBottom: "4px",
+              marginBottom: "10px",
+              textTransform: "uppercase"
+            }}>
+              Contact Info
+            </h3>
+            <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+              {basics.email && (
+                <li style={{ fontSize: "10.5px", color: "#333", display: "flex", gap: "6px" }}>
+                  <span style={{ color: "#1c6075" }}>✉</span>
+                  <span style={{ wordBreak: "break-all" }}>{basics.email}</span>
+                </li>
+              )}
+              {basics.phone && (
+                <li style={{ fontSize: "10.5px", color: "#333", display: "flex", gap: "6px" }}>
+                  <span style={{ color: "#1c6075" }}>☎</span>
+                  <span>{basics.phone}</span>
+                </li>
+              )}
+              {basics.location && (
+                <li style={{ fontSize: "10.5px", color: "#333", display: "flex", gap: "6px" }}>
+                  <span style={{ color: "#1c6075" }}>📍</span>
+                  <span>{basics.location}</span>
+                </li>
+              )}
+              {basics.website && (
+                <li style={{ fontSize: "10.5px", color: "#333", display: "flex", gap: "6px" }}>
+                  <span style={{ color: "#1c6075" }}>🔗</span>
+                  <span style={{ wordBreak: "break-all" }}>{basics.website}</span>
+                </li>
+              )}
+            </ul>
+          </div>
+
+          {/* Skills */}
+          <div>
+            <h3 style={{
+              fontSize: "12px",
+              fontWeight: 800,
+              color: "#1c6075",
+              letterSpacing: "0.08em",
+              borderBottom: "1.5px solid #d0e4f0",
+              paddingBottom: "4px",
+              marginBottom: "10px",
+              textTransform: "uppercase"
+            }}>
+              Skills
+            </h3>
+            <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "5px" }}>
+              {skillsList.slice(0, 8).map((skill, i) => (
+                <li key={i} style={{ fontSize: "10.5px", color: "#333", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ color: "#46a2c1", fontSize: "12px" }}>•</span>
+                  <span>{skill}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Related Skills */}
+          {skillsList.length > 8 && (
+            <div>
+              <h3 style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#1c6075",
+                letterSpacing: "0.08em",
+                borderBottom: "1.5px solid #d0e4f0",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                textTransform: "uppercase"
+              }}>
+                Related Skills
+              </h3>
+              <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "5px" }}>
+                {skillsList.slice(8, 14).map((skill, i) => (
+                  <li key={i} style={{ fontSize: "10.5px", color: "#333", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ color: "#46a2c1", fontSize: "12px" }}>•</span>
+                    <span>{skill}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Languages */}
+          {languages && languages.length > 0 && (
+            <div>
+              <h3 style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#1c6075",
+                letterSpacing: "0.08em",
+                borderBottom: "1.5px solid #d0e4f0",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                textTransform: "uppercase"
+              }}>
+                Languages
+              </h3>
+              <ul style={{ listStyleType: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "5px" }}>
+                {languages.map((lang, i) => (
+                  <li key={i} style={{ fontSize: "10.5px", color: "#333", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ color: "#46a2c1", fontSize: "12px" }}>•</span>
+                    <span>{lang}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Education */}
+          {education && education.length > 0 && (
+            <div>
+              <h3 style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#1c6075",
+                letterSpacing: "0.08em",
+                borderBottom: "1.5px solid #d0e4f0",
+                paddingBottom: "4px",
+                marginBottom: "10px",
+                textTransform: "uppercase"
+              }}>
+                Education
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {education.map((edu, idx) => (
+                  <div key={edu.id || idx}>
+                    <p style={{ fontWeight: 700, fontSize: "10.5px", color: "#111", lineHeight: "1.4" }}>
+                      {edu.degree || "Degree"}
+                    </p>
+                    <p style={{ fontSize: "10px", color: "#666", marginTop: "2px", lineHeight: "1.4" }}>
+                      from {edu.school || "School"}
+                      {edu.end && ` (${edu.end})`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 export const TEMPLATES = [
   { id: "modern", name: "Modern", component: ModernTemplate },
   { id: "classic", name: "Classic", component: ClassicTemplate },
@@ -1429,6 +1800,7 @@ export const TEMPLATES = [
   { id: "watson", name: "Watson", component: WatsonTemplate },
   { id: "sophia", name: "Sophia", component: SophiaTemplate },
   { id: "turquoise", name: "Turquoise Sidebar", component: TurquoiseTemplate },
+  { id: "saurabh", name: "Saurabh Sidebar", component: SaurabhTemplate },
 ] as const;
 
 export type TemplateId = typeof TEMPLATES[number]["id"];
