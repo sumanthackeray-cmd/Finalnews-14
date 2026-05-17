@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   X, Send, Loader2, Trash2, Maximize2, Minimize2, 
@@ -21,6 +22,7 @@ interface Message {
 
 export function AIChatbot() {
   const { user } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [activeTab, setActiveTab] = useState<"chat" | "analyze" | "interview">("chat");
@@ -160,6 +162,11 @@ export function AIChatbot() {
   ];
 
   const [isVisible, setIsVisible] = useState(true);
+
+  // Reset visibility automatically on every page navigation / route change
+  useEffect(() => {
+    setIsVisible(true);
+  }, [location.pathname]);
 
   if (!isVisible) return null;
 
