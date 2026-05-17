@@ -35,21 +35,42 @@ export const Route = createFileRoute("/resume/$id")({
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-function downloadBlob(blob: Blob, filename: string) {
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const dataUrl = e.target?.result as string;
+async function downloadBlob(blob: Blob, filename: string) {
+  try {
+    const buf = await blob.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buf);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = window.btoa(binary);
+    const dataUrl = `data:${blob.type || "application/octet-stream"};base64,${base64}`;
+    
     const a = document.createElement("a");
     a.style.display = "none";
     a.href = dataUrl;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
+    
     setTimeout(() => {
       document.body.removeChild(a);
     }, 150);
-  };
-  reader.readAsDataURL(blob);
+  } catch (error) {
+    console.error("Custom download failed, falling back to basic link:", error);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
+  }
 }
 
 function Builder() {
