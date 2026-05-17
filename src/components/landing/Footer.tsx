@@ -35,6 +35,7 @@ export function Footer() {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Legal</h4>
               <Link to="/privacy" className="text-sm font-semibold text-text hover:text-accent transition-colors">Privacy</Link>
               <Link to="/privacy" className="text-sm font-semibold text-text hover:text-accent transition-colors">Terms</Link>
+              <Link to="/refund" className="text-sm font-semibold text-text hover:text-accent transition-colors">Refund Policy</Link>
             </div>
           </div>
         </div>
