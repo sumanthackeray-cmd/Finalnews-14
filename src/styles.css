@@ -179,6 +179,57 @@ body {
   color: var(--text) !important;
 }
 
+/* ─── MOBILE-SPECIFIC: Force solid backgrounds on ALL overlays ─── */
+/*
+  On small screens, Tailwind bg-* utilities can conflict with Shadcn HSL
+  variables. These rules use raw CSS custom properties so every popup/overlay
+  is guaranteed to be fully opaque regardless of device size or theme.
+*/
+@media (max-width: 768px) {
+  /* AI Chat window full-screen on mobile */
+  [class*="AIChatbot"],
+  .vogats-ai-window {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* All dialogs, sheets, bottom-sheets on mobile */
+  [role="dialog"],
+  [data-radix-dialog-content],
+  [class*="SheetContent"],
+  [data-state="open"][class*="Content"],
+  [data-state="open"][class*="content"] {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Radix popovers and menus on mobile */
+  [data-radix-popper-content-wrapper] > * {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Mobile nav drawer uses .bg-bg — map to CSS variable directly */
+  .bg-bg {
+    background-color: var(--bg) !important;
+  }
+
+  /* Card and surface backgrounds on mobile */
+  .bg-card {
+    background-color: var(--card) !important;
+  }
+
+  .bg-surface {
+    background-color: var(--surface) !important;
+  }
+}
+
 /* ─── NOISE OVERLAY ─── */
 .dark body::before {
   content: '';

@@ -168,11 +168,12 @@ export function AIChatbot() {
   return (
     <div 
       className={cn(
-        "fixed flex flex-col bg-bg overflow-hidden z-[999999] shadow-2xl transition-all duration-300 ease-in-out",
+        "fixed flex flex-col overflow-hidden z-[999999] shadow-2xl transition-all duration-300 ease-in-out",
         "inset-0 w-full h-[100dvh] rounded-none border-0 md:inset-auto md:bottom-6 md:right-6 md:w-[480px] md:h-[min(800px,85vh)] md:rounded-[2rem] md:border md:border-border",
         isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none",
         isFullScreen && "md:inset-4 md:w-auto md:h-auto md:max-h-none"
       )}
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
 
       <style>{`
@@ -187,7 +188,7 @@ export function AIChatbot() {
       `}</style>
 
       {/* Header Bar */}
-      <div className="h-[64px] border-b border-border bg-bg flex flex-col shrink-0 px-4 relative z-10">
+      <div className="h-[64px] border-b border-border flex flex-col shrink-0 px-4 relative z-10" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden">
@@ -216,7 +217,7 @@ export function AIChatbot() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center px-4 py-2 gap-2 border-b border-border bg-card">
+      <div className="flex items-center px-4 py-2 gap-2 border-b border-border" style={{ backgroundColor: "var(--card)" }}>
         {[
           { id: "chat", icon: MessageSquare, label: "AI Coach" },
           { id: "analyze", icon: Target, label: "ATS Analysis" },
@@ -228,7 +229,7 @@ export function AIChatbot() {
             className={cn(
               "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200",
               activeTab === tab.id 
-                ? "bg-accent text-white shadow-[0_8px_20px_-6px_rgba(99,102,241,0.5)] scale-[1.02]" 
+                ? "bg-accent-solid text-white shadow-[0_8px_20px_-6px_rgba(99,102,241,0.5)] scale-[1.02]" 
                 : "text-muted hover:text-text hover:bg-surface"
             )}
           >
@@ -284,9 +285,10 @@ export function AIChatbot() {
                       className={cn(
                         "px-4 py-3 text-[14px] leading-relaxed shadow-sm",
                         msg.role === "user" 
-                          ? "bg-accent text-white rounded-[20px_20px_4px_20px] max-w-[85%]" 
+                          ? "text-white rounded-[20px_20px_4px_20px] max-w-[85%]" 
                           : "bg-card border border-border text-text rounded-[20px_20px_20px_4px] max-w-[90%]"
                       )}
+                      style={msg.role === "user" ? { backgroundColor: "var(--accent)" } : {}}
                     >
                       <div className={cn(
                         "prose prose-sm max-w-none break-words",
@@ -400,10 +402,11 @@ export function AIChatbot() {
 
       {/* Input Bar - Only for Chat */}
       {activeTab === "chat" && (
-        <div className="p-4 bg-card border-t border-border shrink-0">
+        <div className="p-4 border-t border-border shrink-0" style={{ backgroundColor: "var(--card)" }}>
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="ai-chat-input-wrapper flex items-center gap-2 px-3.5 py-2.5 bg-[var(--surface)] border-[1.5px] border-[var(--border)] rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] focus-within:border-[var(--accent)] focus-within:ring-4 focus-within:ring-[var(--accent)]/5 transition-all min-h-[48px] max-h-[180px]"
+            className="ai-chat-input-wrapper flex items-center gap-2 px-3.5 py-2.5 border-[1.5px] border-[var(--border)] rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] focus-within:border-[var(--accent)] focus-within:ring-4 focus-within:ring-[var(--accent)]/5 transition-all min-h-[48px] max-h-[180px]"
+            style={{ backgroundColor: "var(--surface)" }}
           >
             <button 
               type="button" 
@@ -424,14 +427,15 @@ export function AIChatbot() {
                 }
               }}
               placeholder="Ask anything..."
-              className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] leading-[1.5] text-[var(--text)] placeholder:text-[var(--muted)] p-0 m-0 resize-none min-h-[24px] max-h-[150px] chat-scrollbar font-medium self-center"
+              style={{ color: "var(--text)", caretColor: "var(--accent)" }}
+              className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] leading-[1.5] placeholder:text-[var(--muted)] p-0 m-0 resize-none min-h-[24px] max-h-[150px] chat-scrollbar font-medium self-center"
             />
             <button 
               type="submit" 
               disabled={isLoading || !input.trim()}
               className={cn(
                 "w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90 shrink-0 self-end mb-[2px]",
-                input.trim() ? "bg-accent text-white shadow-lg" : "text-muted bg-muted/10"
+                input.trim() ? "bg-accent-solid text-white shadow-lg" : "text-muted bg-muted/10"
               )}
             >
               <Send className="w-4 h-4" />
