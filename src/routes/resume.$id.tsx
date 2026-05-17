@@ -703,9 +703,32 @@ function Builder() {
     }
 
     setExporting(true);
+    let clRestoreImages = () => {};
+    let clPrevTransform = "";
+    const clNode = clText ? document.getElementById("cover-letter-preview-node") : null;
+
     try {
       const { default: jsPDF } = await import("jspdf");
+      const { default: html2canvas } = await import("html2canvas-pro");
+      
       const canvas = await renderCanvas();
+
+      // Render cover letter canvas if available
+      let clCanvas = null;
+      if (clNode) {
+        clPrevTransform = clNode.style.transform;
+        clNode.style.transform = "none";
+        clRestoreImages = sanitizeImagesForExport(clNode);
+        clCanvas = await html2canvas(clNode, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          width: 820,
+          height: 1160,
+          logging: false,
+        });
+      }
 
       // Use JPEG format — avoids jsPDF's strict PNG header validation entirely
       const imgDataUrl = canvas.toDataURL("image/jpeg", 0.97);
@@ -744,15 +767,31 @@ function Builder() {
         }
       }
 
+      // Append Cover Letter as 2nd page if available
+      if (clCanvas) {
+        const clImgDataUrl = clCanvas.toDataURL("image/jpeg", 0.97);
+        pdf.addPage();
+        pdf.addImage(clImgDataUrl, "JPEG", 0, 0, pageW, pageH);
+      }
+
       const blob = pdf.output("blob");
       downloadBlob(blob, `${title || "resume"}.pdf`, user?.uid);
-      toast.success("PDF downloaded successfully!");
+      
+      if (clCanvas) {
+        toast.success("Resume + Cover Letter PDF downloaded successfully!");
+      } else {
+        toast.success("PDF downloaded successfully!");
+      }
     } catch (e: any) {
       console.error("[PDF Export Error]:", e);
       toast.error("Export failed: " + (e.message ?? "Unknown error"), {
         description: "Try removing your profile photo and re-downloading.",
       });
     } finally {
+      if (clNode) {
+        if (clPrevTransform) clNode.style.transform = clPrevTransform;
+        clRestoreImages();
+      }
       setExporting(false);
     }
   };
@@ -773,7 +812,14 @@ function Builder() {
     }
 
     setExporting(true);
+    let clRestoreImages = () => {};
+    let clPrevTransform = "";
+    const clNode = clText ? document.getElementById("cover-letter-preview-node") : null;
+
     try {
+      const { Document, Packer, Paragraph, ImageRun } = await import("docx");
+      const { default: html2canvas } = await import("html2canvas-pro");
+
       // Screenshot the rendered template at full 820px resolution — pixel-perfect visual fidelity
       const canvas = await renderCanvas();
 
@@ -787,40 +833,90 @@ function Builder() {
       );
       const imgBuf = await imgBlob.arrayBuffer();
 
-      // Build a DOCX with the template image embedded as a full-page figure
-      const { Document, Packer, Paragraph, ImageRun, PageOrientation } = await import("docx");
+      // Handle cover letter canvas if available
+      let clBuf = null;
+      if (clNode) {
+        clPrevTransform = clNode.style.transform;
+        clNode.style.transform = "none";
+        clRestoreImages = sanitizeImagesForExport(clNode);
+        const clCanvas = await html2canvas(clNode, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          width: 820,
+          height: 1160,
+          logging: false,
+        });
+
+        const clBlob: Blob = await new Promise((res, rej) =>
+          clCanvas.toBlob(
+            (b) => (b ? res(b) : rej(new Error("Cover letter canvas failed"))),
+            "image/jpeg",
+            0.97,
+          ),
+        );
+        clBuf = await clBlob.arrayBuffer();
+      }
 
       // A4 in EMUs: 9906000 wide × 14031360 tall (portrait)
       const emuW = 9144000; // ~10.16 cm inside margins ≈ full-width at 1-inch margins
       const emuH = Math.round((canvas.height / canvas.width) * emuW);
 
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              new Paragraph({
-                spacing: { before: 0, after: 0 },
-                children: [
-                  new ImageRun({
-                    type: "jpg",
-                    data: imgBuf,
-                    transformation: { width: Math.round(emuW / 9144), height: Math.round(emuH / 9144) },
-                  } as any),
-                ],
-              }),
-            ],
-          },
-        ],
-      });
+      const sections = [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              spacing: { before: 0, after: 0 },
+              children: [
+                new ImageRun({
+                  type: "jpg",
+                  data: imgBuf,
+                  transformation: { width: Math.round(emuW / 9144), height: Math.round(emuH / 9144) },
+                } as any),
+              ],
+            }),
+          ],
+        }
+      ];
 
+      // Add cover letter as page 2 if buffer exists
+      if (clBuf) {
+        sections.push({
+          properties: {},
+          children: [
+            new Paragraph({
+              spacing: { before: 0, after: 0 },
+              children: [
+                new ImageRun({
+                  type: "jpg",
+                  data: clBuf,
+                  transformation: { width: Math.round(emuW / 9144), height: Math.round(emuH / 9144) },
+                } as any),
+              ],
+            }),
+          ],
+        });
+      }
+
+      const doc = new Document({ sections });
       const docxBlob = await Packer.toBlob(doc);
       await downloadBlob(docxBlob, `${title || "resume"}.docx`, user?.uid);
-      toast.success("Word document downloaded — exact template design preserved!");
+      
+      if (clBuf) {
+        toast.success("Word document (Resume + Cover Letter) downloaded successfully!");
+      } else {
+        toast.success("Word document downloaded — exact template design preserved!");
+      }
     } catch (e: any) {
       console.error("[DOCX Export Error]:", e);
       toast.error(e.message ?? "DOCX export failed");
     } finally {
+      if (clNode) {
+        if (clPrevTransform) clNode.style.transform = clPrevTransform;
+        clRestoreImages();
+      }
       setExporting(false);
     }
   };
