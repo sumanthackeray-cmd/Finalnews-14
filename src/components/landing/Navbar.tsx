@@ -281,10 +281,10 @@ export function Navbar() {
             </Link>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-vogats-ai"))}
-              className="text-[11px] font-black uppercase tracking-[0.2em] text-accent flex items-center gap-2 hover:scale-110 transition-transform"
+              className="text-accent flex items-center justify-center p-2 rounded-xl bg-accent/5 hover:bg-accent/15 border border-accent/20 hover:scale-110 transition-all duration-300 relative group/ai"
+              title="Chat with AI"
             >
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              Chat with AI
             </button>
           </nav>
 
@@ -294,11 +294,22 @@ export function Navbar() {
               <ThemeToggle />
             </div>
 
-            <Link to={user ? "/dashboard" : "/auth"} className="hidden sm:block">
-              <button className="btn-premium px-6 py-1.5 sm:px-8 sm:py-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest shadow-xl">
-                {user ? "Dashboard" : "Join Now"}
-              </button>
-            </Link>
+            <div className="hidden sm:flex items-center gap-3">
+              <Link to={user ? "/dashboard" : "/auth"}>
+                <button className="btn-premium px-6 py-1.5 sm:px-8 sm:py-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest shadow-xl">
+                  {user ? "Dashboard" : "Join Now"}
+                </button>
+              </Link>
+              
+              {user && (
+                <button
+                  onClick={() => signOut()}
+                  className="px-5 py-1.5 border border-border hover:border-red-500/40 hover:bg-red-500/5 hover:text-red-500 text-muted-foreground text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-sm whitespace-nowrap"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
 
             {/* Hamburger */}
             <button

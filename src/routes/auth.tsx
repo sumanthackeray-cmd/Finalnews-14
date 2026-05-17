@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
@@ -44,6 +44,37 @@ function AuthPage() {
     }
   }, [user, loading, nav, redirect]);
 
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          setBusy(true);
+          const user = result.user;
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (!userDoc.exists()) {
+            await setDoc(doc(db, "users", user.uid), {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              createdAt: new Date().toISOString(),
+            });
+          }
+          toast.success("Welcome to Vogats CV!");
+          if (redirect) window.location.href = redirect;
+          else nav({ to: "/dashboard" });
+        }
+      } catch (err: any) {
+        console.error("Redirect error: ", err);
+        toast.error(err.message ?? "Google sign in failed");
+      } finally {
+        setBusy(false);
+      }
+    };
+    handleRedirectResult();
+  }, [nav, redirect]);
+
   const handleGoogleSignIn = async () => {
     setBusy(true);
     const provider = new GoogleAuthProvider();
@@ -51,27 +82,10 @@ function AuthPage() {
       prompt: 'select_account'
     });
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          createdAt: new Date().toISOString(),
-        });
-      }
-      
-      toast.success("Welcome to Vogats CV!");
-      if (redirect) window.location.href = redirect;
-      else nav({ to: "/dashboard" });
+      await signInWithRedirect(auth, provider);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message ?? "Google sign in failed");
-    } finally {
       setBusy(false);
     }
   };
