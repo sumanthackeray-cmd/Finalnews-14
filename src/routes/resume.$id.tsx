@@ -45,20 +45,33 @@ async function downloadBlob(blob: Blob, filename: string) {
       binary += String.fromCharCode(bytes[i]);
     }
     const base64 = window.btoa(binary);
-    const dataUrl = `data:${blob.type || "application/octet-stream"};base64,${base64}`;
-    
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = dataUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
+
+    // Create a hidden form and submit it to the server endpoint
+    const form = document.createElement("form");
+    form.action = "/api/download";
+    form.method = "POST";
+    form.style.display = "none";
+
+    const addInput = (name: string, value: string) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+
+    addInput("base64", base64);
+    addInput("filename", filename);
+    addInput("mimeType", blob.type);
+
+    document.body.appendChild(form);
+    form.submit();
     
     setTimeout(() => {
-      document.body.removeChild(a);
-    }, 150);
+      document.body.removeChild(form);
+    }, 250);
   } catch (error) {
-    console.error("Custom download failed, falling back to basic link:", error);
+    console.error("Server download failed, falling back to basic link:", error);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.style.display = "none";
