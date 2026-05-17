@@ -66,10 +66,10 @@ export function Templates() {
     setPage(0);
   }, [perSlide]);
 
-  const visibleTemplates = SORTED_TEMPLATES.slice(
-    page * perSlide,
-    page * perSlide + perSlide
-  );
+  const pagesArray = [];
+  for (let i = 0; i < SORTED_TEMPLATES.length; i += perSlide) {
+    pagesArray.push(SORTED_TEMPLATES.slice(i, i + perSlide));
+  }
 
   return (
     <section id="templates" className="relative py-16 md:py-24 overflow-hidden bg-surface/20">
@@ -93,66 +93,76 @@ export function Templates() {
           </p>
         </div>
 
-        {/* Carousel */}
+        {/* Carousel Wrapper with horizontal sliding track */}
         <div
-          className="relative"
+          className="relative group/carousel overflow-visible"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onTouchStart={() => setPaused(true)}
           onTouchEnd={() => setPaused(false)}
         >
-          {/* Cards */}
-          <div
-            className="grid gap-6 transition-all duration-500"
-            style={{ gridTemplateColumns: `repeat(${perSlide}, minmax(0, 1fr))` }}
-          >
-            {visibleTemplates.map((t) => (
-              <div key={`${page}-${t.id}`} className="group relative animate-fadeU">
-                <div
-                  className={`relative p-1 rounded-[2rem] bg-gradient-to-br ${t.accent} border border-border/50 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:-rotate-1 cursor-pointer overflow-hidden`}
-                  onClick={() => navigate({ to: "/dashboard", search: { template: t.id } })}
+          {/* Outer track wrapper containing full width layout hidden overflow */}
+          <div className="overflow-hidden rounded-[2rem] p-2 -m-2">
+            <div
+              className="flex transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{ transform: `translate3d(-${page * 100}%, 0, 0)` }}
+            >
+              {pagesArray.map((pageTemplates, pageIdx) => (
+                <div 
+                  key={pageIdx} 
+                  className="w-full shrink-0 grid gap-6"
+                  style={{ gridTemplateColumns: `repeat(${perSlide}, minmax(0, 1fr))` }}
                 >
-                  {/* Hover CTA */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-bg/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-end justify-center pb-8">
-                    <button className="btn-premium px-7 py-3 rounded-full flex items-center gap-2 text-sm">
-                      Use Template <ArrowUpRight className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {pageTemplates.map((t) => (
+                    <div key={t.id} className="group relative">
+                      <div
+                        className={`relative p-1 rounded-[2rem] bg-gradient-to-br ${t.accent} border border-border/50 shadow-2xl transition-all duration-500 hover:scale-[1.03] hover:-rotate-1 cursor-pointer overflow-hidden group-hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)]`}
+                        onClick={() => navigate({ to: "/dashboard", search: { template: t.id } })}
+                      >
+                        {/* Hover CTA overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-bg/95 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-end justify-center pb-8">
+                          <button className="btn-premium px-7 py-3 rounded-full flex items-center gap-2 text-sm shadow-xl hover:scale-105 transition-transform duration-200">
+                            Use Template <ArrowUpRight className="h-4 w-4" />
+                          </button>
+                        </div>
 
-                  {/* Popularity badge */}
-                  <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-                    🔥 {(t.pop / 1000).toFixed(0)}K uses
-                  </div>
+                        {/* Popularity badge */}
+                        <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-white/10 shadow-sm">
+                          🔥 {(t.pop / 1000).toFixed(0)}K uses
+                        </div>
 
-                  <TemplateThumb
-                    templateId={t.id}
-                    className="rounded-[1.8rem] w-full transform transition-transform duration-700 group-hover:scale-110"
-                  />
+                        <TemplateThumb
+                          templateId={t.id}
+                          className="rounded-[1.8rem] w-full transform transition-transform duration-700 group-hover:scale-105"
+                        />
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-between px-2">
+                        <div>
+                          <h4 className="font-display text-xl font-bold transition-colors group-hover:text-accent">{t.name}</h4>
+                          <p className="text-xs uppercase tracking-[0.2em] text-muted font-bold mt-0.5">{t.tag}</p>
+                        </div>
+                        <div className="h-1 w-10 rounded-full bg-border group-hover:w-20 group-hover:bg-accent transition-all duration-500" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="mt-5 flex items-center justify-between px-2">
-                  <div>
-                    <h4 className="font-display text-xl font-bold">{t.name}</h4>
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted font-bold mt-0.5">{t.tag}</p>
-                  </div>
-                  <div className="h-1 w-10 rounded-full bg-border group-hover:w-20 group-hover:bg-accent transition-all duration-500" />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Prev / Next buttons */}
+          {/* Prev / Next navigation buttons */}
           <button
             onClick={() => { goPrev(); setPaused(true); }}
             aria-label="Previous templates"
-            className="absolute -left-5 top-1/2 -translate-y-1/2 w-11 h-11 bg-card border border-border rounded-full flex items-center justify-center shadow-lg hover:bg-accent hover:text-white hover:border-accent transition-all z-20 hidden sm:flex"
+            className="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-card/90 dark:bg-card/75 backdrop-blur-md border border-border/80 rounded-full flex items-center justify-center shadow-xl hover:bg-accent hover:text-white hover:border-accent transition-all duration-300 hover:scale-110 active:scale-95 z-20 hidden sm:flex cursor-pointer"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             onClick={() => { goNext(); setPaused(true); }}
             aria-label="Next templates"
-            className="absolute -right-5 top-1/2 -translate-y-1/2 w-11 h-11 bg-card border border-border rounded-full flex items-center justify-center shadow-lg hover:bg-accent hover:text-white hover:border-accent transition-all z-20 hidden sm:flex"
+            className="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-card/90 dark:bg-card/75 backdrop-blur-md border border-border/80 rounded-full flex items-center justify-center shadow-xl hover:bg-accent hover:text-white hover:border-accent transition-all duration-300 hover:scale-110 active:scale-95 z-20 hidden sm:flex cursor-pointer"
           >
             <ChevronRight className="h-5 w-5" />
           </button>

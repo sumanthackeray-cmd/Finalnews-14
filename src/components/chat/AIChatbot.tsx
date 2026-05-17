@@ -80,6 +80,21 @@ function getSuggestionsForResponse(content: string): string[] {
   ];
 }
 
+function formatRawUrlsToMarkdown(content: string): string {
+  if (!content) return "";
+  
+  // Matches raw urls like http(s)://... or cv.vogats.com/... not already wrapped in markdown parenthesis/brackets
+  const urlRegex = /(?<!\(|\[)(https?:\/\/[^\s\)]+|cv\.vogats\.com[^\s\)]*)/gi;
+  
+  return content.replace(urlRegex, (url) => {
+    let targetUrl = url;
+    if (!/^https?:\/\//i.test(url)) {
+      targetUrl = `https://${url}`;
+    }
+    return `[${url}](${targetUrl})`;
+  });
+}
+
 export function AIChatbot() {
   const { user } = useAuth();
   const location = useLocation();
@@ -664,7 +679,7 @@ export function AIChatbot() {
                                 }
                               }}
                             >
-                              {msg.content}
+                              {formatRawUrlsToMarkdown(msg.content)}
                             </ReactMarkdown>
 
                             {/* Blinking Cursor during Streaming */}
