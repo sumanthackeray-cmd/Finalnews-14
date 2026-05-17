@@ -35,43 +35,27 @@ export const Route = createFileRoute("/resume/$id")({
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-async function downloadBlob(blob: Blob, filename: string) {
+function downloadBlob(blob: Blob, filename: string) {
   try {
-    const buf = await blob.arrayBuffer();
-    let binary = "";
-    const bytes = new Uint8Array(buf);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = window.btoa(binary);
-
-    // Create a hidden form and submit it to the server endpoint
-    const form = document.createElement("form");
-    form.action = "/api/download";
-    form.method = "POST";
-    form.style.display = "none";
-
-    const addInput = (name: string, value: string) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    };
-
-    addInput("base64", base64);
-    addInput("filename", filename);
-    addInput("mimeType", blob.type);
-
-    document.body.appendChild(form);
-    form.submit();
+    // Force mime-type to application/octet-stream to prevent IDM/Download extensions
+    // from intercepting the download and losing the filename.
+    const octetBlob = new Blob([blob], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(octetBlob);
+    
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = filename;
+    
+    document.body.appendChild(a);
+    a.click();
     
     setTimeout(() => {
-      document.body.removeChild(form);
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }, 250);
   } catch (error) {
-    console.error("Server download failed, falling back to basic link:", error);
+    console.error("Direct download failed, falling back:", error);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.style.display = "none";
