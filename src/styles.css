@@ -3,6 +3,18 @@
 @plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-soft: var(--soft);
+}
+
 @source "../src";
 
 :root {
