@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { generateAIContent } from "@/lib/ai-service";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
 interface Message {
@@ -18,6 +19,8 @@ interface Message {
   content: string;
   timestamp: string;
   isStreaming?: boolean;
+  attachmentName?: string;
+  attachmentType?: string;
 }
 
 function getSuggestionsForResponse(content: string): string[] {
@@ -96,6 +99,78 @@ function formatRawUrlsToMarkdown(content: string): string {
   });
 }
 
+// Dynamic PDF.js library loader from CDN
+const loadPdfJs = (): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    if ((window as any).pdfjsLib) {
+      resolve((window as any).pdfjsLib);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.onload = () => {
+      const pdfjsLib = (window as any).pdfjsLib;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      resolve(pdfjsLib);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
+
+// Pure client-side PDF text extraction in milliseconds
+const extractTextFromPdf = async (file: File): Promise<string> => {
+  const pdfjsLib = await loadPdfJs();
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map((item: any) => (item as any).str).join(" ");
+    fullText += `--- Page ${i} ---\n${pageText}\n`;
+  }
+  return fullText;
+};
+
+// Dynamic Tesseract.js library loader from CDN
+const loadTesseract = (): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Tesseract) {
+      resolve((window as any).Tesseract);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/tesseract.js@5.0.3/dist/tesseract.min.js";
+    script.onload = () => {
+      resolve((window as any).Tesseract);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
+
+// Pure client-side Image OCR text extraction
+const extractTextFromImage = async (file: File): Promise<string> => {
+  const Tesseract = await loadTesseract();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const result = await Tesseract.recognize(
+          reader.result as string,
+          'eng'
+        );
+        resolve(result.data.text);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export function AIChatbot() {
   const { user } = useAuth();
   const location = useLocation();
@@ -139,6 +214,40 @@ export function AIChatbot() {
   const [atsScore, setAtsScore] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  // File upload states
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [isReadingFile, setIsReadingFile] = useState(false);
+  const [attachedFileText, setAttachedFileText] = useState<string>("");
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAttachedFile(file);
+    setIsReadingFile(true);
+    setAttachedFileText("");
+
+    try {
+      let extractedText = "";
+      if (file.type === "application/pdf") {
+        extractedText = await extractTextFromPdf(file);
+      } else if (file.type.startsWith("image/")) {
+        extractedText = await extractTextFromImage(file);
+      } else {
+        throw new Error("Unsupported file type. Please upload a PDF or an Image.");
+      }
+      setAttachedFileText(extractedText);
+    } catch (err: any) {
+      console.error("Error reading file:", err);
+      toast.error(err.message || "Failed to read file contents.");
+      setAttachedFile(null);
+    } finally {
+      setIsReadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Handle textarea auto-resize
   useEffect(() => {
@@ -310,6 +419,15 @@ export function AIChatbot() {
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setInput("");
+
+    // Lock file attachment data for this message
+    const fileToPill = attachedFile;
+    const fileTextToSend = attachedFileText;
+
+    // Reset attachments state
+    setAttachedFile(null);
+    setAttachedFileText("");
+    setIsReadingFile(false);
     
     // Reset scroll lock when sending a new message
     setUserHasScrolledUp(false);
@@ -321,15 +439,22 @@ export function AIChatbot() {
         id: `user-${Date.now()}`,
         role: "user",
         content: messageToSend,
-        timestamp
+        timestamp,
+        attachmentName: fileToPill?.name,
+        attachmentType: fileToPill?.type
       }
     ]);
     setIsLoading(true);
 
     try {
+      let promptToSend = messageToSend;
+      if (fileToPill && fileTextToSend) {
+        promptToSend = `[Attached File: ${fileToPill.name}]\nFile contents/text:\n"""\n${fileTextToSend}\n"""\n\nUser Question:\n${messageToSend}`;
+      }
+
       const response = await generateAIContent({
         action: "chat",
-        data: { message: messageToSend }
+        data: { message: promptToSend }
       });
 
       if (response.error) throw new Error(response.error);
@@ -614,6 +739,22 @@ export function AIChatbot() {
                               : "bg-card border border-border/60 text-text rounded-[24px_24px_24px_4px] max-w-[90%] md:max-w-[85%] hover:border-accent-solid/20"
                           )}
                         >
+                          {msg.attachmentName && (
+                            <div className={cn(
+                              "flex items-center gap-2 px-3 py-2 mb-2 rounded-xl border max-w-full truncate",
+                              isUser 
+                                ? "bg-white/10 border-white/20 text-white" 
+                                : "bg-[#6366f1]/5 border-[#6366f1]/20 text-text"
+                            )}>
+                              {msg.attachmentType === "application/pdf" ? (
+                                <FileText className={cn("w-4 h-4 shrink-0", isUser ? "text-white" : "text-accent-solid")} />
+                              ) : (
+                                <Layout className={cn("w-4 h-4 shrink-0", isUser ? "text-white" : "text-accent-solid")} />
+                              )}
+                              <span className="text-[11px] font-bold truncate">{msg.attachmentName}</span>
+                            </div>
+                          )}
+
                           <div className={cn(
                             "prose prose-sm max-w-none break-words leading-relaxed",
                             isUser ? "text-white prose-invert" : "text-text"
@@ -944,12 +1085,59 @@ export function AIChatbot() {
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
               className="relative flex flex-col gap-2 p-3 bg-surface border border-border/80 rounded-[24px] shadow-lg focus-within:border-accent-solid focus-within:ring-4 focus-within:ring-accent-solid/5 transition-all duration-300"
             >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*,application/pdf" 
+                className="hidden" 
+              />
+
+              {/* File Preview Container inside the form above textarea */}
+              {attachedFile && (
+                <div className="flex items-center gap-3 p-2.5 mx-1 mb-2 bg-[#6366f1]/5 dark:bg-[#6366f1]/10 border border-[#6366f1]/20 rounded-2xl animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-accent-solid/10 flex items-center justify-center text-accent-solid shrink-0">
+                    {attachedFile.type === "application/pdf" ? (
+                      <FileText className="w-5 h-5" />
+                    ) : (
+                      <Layout className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-text truncate">{attachedFile.name}</p>
+                    <p className="text-[10px] text-muted font-medium mt-0.5">
+                      {isReadingFile ? (
+                        <span className="flex items-center gap-1 text-[#6366f1]">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Reading file content...
+                        </span>
+                      ) : (
+                        <span className="text-emerald-500 font-bold flex items-center gap-0.5">
+                          ✓ File content ready for AI
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAttachedFile(null);
+                      setAttachedFileText("");
+                      setIsReadingFile(false);
+                    }}
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 {/* Attachment button */}
                 <button
                   type="button"
+                  onClick={() => fileInputRef.current?.click()}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-accent-solid hover:bg-soft transition-all duration-200"
-                  title="Attach files"
+                  title="Attach files (PDF, JPG, PNG)"
                 >
                   <Paperclip className="w-4 h-4" />
                 </button>
@@ -967,7 +1155,7 @@ export function AIChatbot() {
                       handleSend();
                     }
                   }}
-                  placeholder="Ask Vogats AI anything..."
+                  placeholder={attachedFile ? "Ask anything about this file..." : "Ask Vogats AI anything..."}
                   className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] leading-relaxed placeholder:text-muted/70 p-1 resize-none min-h-[30px] max-h-[140px] chat-scrollbar font-medium focus:outline-none"
                 />
 
@@ -983,10 +1171,10 @@ export function AIChatbot() {
                 {/* Send button */}
                 <button
                   type="submit"
-                  disabled={isLoading || !input.trim() || streamingIndex !== null}
+                  disabled={isLoading || streamingIndex !== null || isReadingFile || (!input.trim() && !attachedFileText)}
                   className={cn(
                     "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shrink-0",
-                    input.trim() && streamingIndex === null
+                    (input.trim() || (attachedFileText && !isReadingFile)) && streamingIndex === null
                       ? "bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/20 hover:scale-105 active:scale-95"
                       : "bg-muted/10 text-muted/50 cursor-not-allowed"
                   )}
