@@ -36,38 +36,32 @@ export const Route = createFileRoute("/resume/$id")({
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 function downloadBlob(blob: Blob, filename: string) {
-  try {
-    // Force mime-type to application/octet-stream to prevent IDM/Download extensions
-    // from intercepting the download and losing the filename.
-    const octetBlob = new Blob([blob], { type: "application/octet-stream" });
-    const url = URL.createObjectURL(octetBlob);
-    
+  // Determine correct mime type based on filename extension to ensure
+  // Chrome falls back to the right extension if the user gesture expires.
+  const mimeType = filename.endsWith('.pdf') 
+    ? 'application/pdf' 
+    : filename.endsWith('.docx') 
+      ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+      : blob.type || 'application/octet-stream';
+
+  const typedBlob = new Blob([blob], { type: mimeType });
+  const reader = new FileReader();
+  
+  reader.onloadend = () => {
+    const dataUrl = reader.result as string;
     const a = document.createElement("a");
     a.style.display = "none";
-    a.href = url;
+    a.href = dataUrl;
     a.download = filename;
-    
     document.body.appendChild(a);
     a.click();
-    
     setTimeout(() => {
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }, 250);
-  } catch (error) {
-    console.error("Direct download failed, falling back:", error);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 150);
-  }
+  };
+  
+  // Convert to Base64 Data URL so there is no UUID in the URL
+  reader.readAsDataURL(typedBlob);
 }
 
 function Builder() {
