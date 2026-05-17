@@ -282,19 +282,6 @@ function Builder() {
     }
   };
   const exportPDF = async () => {
-    // Check subscription
-    const access = checkAccess(subscription);
-    if (!access.allowed) {
-      toast.error(access.reason, {
-        description: "Please upgrade your plan to download your resume.",
-        action: {
-          label: "Upgrade",
-          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO" } })
-        }
-      });
-      return;
-    }
-
     setExporting(true);
     try {
       const { default: jsPDF } = await import("jspdf");
@@ -329,19 +316,6 @@ function Builder() {
   };
 
   const exportDOCX = async () => {
-    // Check subscription
-    const access = checkAccess(subscription);
-    if (!access.allowed) {
-      toast.error(access.reason, {
-        description: "Please upgrade your plan to download your resume.",
-        action: {
-          label: "Upgrade",
-          onClick: () => nav({ to: "/dashboard", search: { buy: "PRO" } })
-        }
-      });
-      return;
-    }
-
     setExporting(true);
     try {
       const canvas = await renderCanvas();

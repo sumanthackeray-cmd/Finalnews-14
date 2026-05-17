@@ -1,5 +1,13 @@
 import type { ResumeData } from "@/lib/resume-types";
 
+export const isValidPhoto = (photo?: string) => {
+  if (!photo) return false;
+  const trimmed = photo.trim();
+  if (trimmed === "" || trimmed === "undefined" || trimmed === "null" || trimmed === "data:,") return false;
+  if (trimmed.startsWith("data:") && !trimmed.includes(",")) return false;
+  return true;
+};
+
 export function ModernTemplate({ data }: { data: ResumeData }) {
   const { basics, experience, education, skills, projects } = data;
   return (
@@ -333,7 +341,7 @@ export function DesignerTemplate({ data }: { data: ResumeData }) {
         {/* Photo block */}
         <div className="relative mb-6">
           <div style={{ background: TAN }} className="aspect-[4/5] w-full flex items-center justify-center overflow-hidden">
-            {basics.photo ? (
+            {isValidPhoto(basics.photo) ? (
               <img src={basics.photo} alt={basics.name} className="w-[78%] aspect-square rounded-full object-cover" />
             ) : (
               <div className="w-[78%] aspect-square rounded-full bg-white/30 flex items-center justify-center text-white/70 text-xs">Photo</div>
@@ -532,7 +540,7 @@ export function AveryTemplate({ data }: { data: ResumeData }) {
         {/* Header */}
         <div className="flex gap-8 items-end">
           <div className="w-40 h-40 rounded-full bg-gray-300 border-4 border-gray-300 overflow-hidden shrink-0">
-            {basics.photo ? (
+            {isValidPhoto(basics.photo) ? (
               <img src={basics.photo} alt={basics.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gray-400 flex items-center justify-center text-white text-xs">Photo</div>
@@ -682,7 +690,7 @@ export function SlaterTemplate({ data }: { data: ResumeData }) {
         {/* Sidebar */}
         <aside className="px-8 pt-44 pb-10">
           <div className="absolute top-16 left-10 w-32 h-32 rounded-full bg-white border-4 border-white overflow-hidden shadow">
-            {basics.photo ? <img src={basics.photo} alt={basics.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200" />}
+            {isValidPhoto(basics.photo) ? <img src={basics.photo} alt={basics.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200" />}
           </div>
           <h1 className="text-[26px] font-extrabold leading-tight">{(basics.name || "Your Name").toUpperCase()}</h1>
           <p className="text-[11px] tracking-[0.2em] mt-1" style={{ color: "#b9836f" }}>{(basics.title || "").toUpperCase()}</p>
@@ -768,7 +776,7 @@ export function WatsonTemplate({ data }: { data: ResumeData }) {
       <aside className="text-white p-7" style={{ background: BLUE }}>
         <div className="flex justify-center mt-2 mb-6">
           <div className="w-32 h-32 rounded-full bg-white border-4 border-white/70 overflow-hidden">
-            {basics.photo ? <img src={basics.photo} alt={basics.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/30" />}
+            {isValidPhoto(basics.photo) ? <img src={basics.photo} alt={basics.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/30" />}
           </div>
         </div>
 
@@ -1009,7 +1017,7 @@ export function SophiaTemplate({ data }: { data: ResumeData }) {
 
       {/* Right Column (Sidebar) */}
       <aside className="p-8 pt-10" style={{ backgroundColor: MUSTARD }}>
-        {basics.photo && (
+        {isValidPhoto(basics.photo) && (
           <div className="mb-10 flex justify-center">
             <img src={basics.photo} alt={basics.name} className="w-40 h-40 object-cover rounded shadow-lg border-2 border-white" />
           </div>
@@ -1303,7 +1311,7 @@ export function TurquoiseTemplate({ data }: { data: ResumeData }) {
           justifyContent: "center",
           borderRadius: "1px"
         }}>
-          {basics.photo ? (
+          {isValidPhoto(basics.photo) ? (
             <img src={basics.photo} alt={basics.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
             <div style={{ color: "#718096", fontSize: "11px", fontWeight: "bold" }}>PHOTO</div>
