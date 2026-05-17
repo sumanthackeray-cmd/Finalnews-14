@@ -42,18 +42,21 @@ function AuthPage() {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          setBusy(true);
           const user = result.user;
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (!userDoc.exists()) {
-            await setDoc(doc(db, "users", user.uid), {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              createdAt: new Date().toISOString(),
-            });
-          }
+          
+          // Non-blocking background Firestore synchronization
+          getDoc(doc(db, "users", user.uid)).then((userDoc) => {
+            if (!userDoc.exists()) {
+              setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }).catch((err) => console.error("Background Firestore sync error:", err));
+
           toast.success("Welcome back to Vogats CV!");
           if (redirect) window.location.href = redirect;
           else nav({ to: "/dashboard" });
@@ -62,7 +65,6 @@ function AuthPage() {
       } catch (err: any) {
         console.error("Redirect processing error:", err);
         toast.error(err.message ?? "Google sign in failed");
-        setBusy(false);
         return;
       }
 
