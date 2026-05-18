@@ -72,16 +72,23 @@ async function downloadBlob(blob: Blob, filename: string, userId?: string) {
       throw new Error(err.error || "Download failed");
     }
 
-    // Trigger file download in browser
+    // Trigger file download in browser with explicit MIME-typed Blob
     const resBlob = await response.blob();
-    const url = URL.createObjectURL(resBlob);
+    const typedBlob = new Blob([resBlob], { type: blob.type || resBlob.type || "application/octet-stream" });
+    const url = URL.createObjectURL(typedBlob);
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    
+    // Safeguard elements clean up with generous timeout to let Chrome resolve download filename
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 2000);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
 
     // Track download count and logs in Firestore
     if (userId) {
@@ -104,17 +111,23 @@ async function downloadBlob(blob: Blob, filename: string, userId?: string) {
     }
   } catch (e: any) {
     console.error("Vercel download API fallback:", e);
-    const url = URL.createObjectURL(blob);
+    const typedBlob = new Blob([blob], { type: blob.type || "application/octet-stream" });
+    const url = URL.createObjectURL(typedBlob);
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
+    
     setTimeout(() => {
-      document.body.removeChild(a);
+      if (document.body.contains(a)) {
+        document.body.removeChild(a);
+      }
+    }, 2000);
+    setTimeout(() => {
       URL.revokeObjectURL(url);
-    }, 150);
+    }, 30000);
   }
 }
 

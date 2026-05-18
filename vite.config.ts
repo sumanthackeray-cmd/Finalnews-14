@@ -25,10 +25,23 @@ export default defineConfig({
               });
               req.on('end', () => {
                 try {
-                  const params = new URLSearchParams(body);
-                  const base64 = params.get('base64');
-                  const filename = params.get('filename');
-                  const mimeType = params.get('mimeType');
+                  let base64 = '';
+                  let filename = '';
+                  let mimeType = '';
+
+                  try {
+                    // Try parsing as JSON first since the client sends Content-Type: application/json
+                    const parsed = JSON.parse(body);
+                    base64 = parsed.base64 || '';
+                    filename = parsed.filename || '';
+                    mimeType = parsed.mimeType || '';
+                  } catch {
+                    // Fallback to URL encoded params
+                    const params = new URLSearchParams(body);
+                    base64 = params.get('base64') || '';
+                    filename = params.get('filename') || '';
+                    mimeType = params.get('mimeType') || '';
+                  }
 
                   if (!base64 || !filename) {
                     res.statusCode = 400;
