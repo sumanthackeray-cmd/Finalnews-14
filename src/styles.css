@@ -523,20 +523,15 @@ body {
 }
 
 /* ─── PRINT AND PDF EXPORT STYLING OVERRIDES ─── */
+/* Force all elements to render full background colors in canvas capture */
 * {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
   color-adjust: exact !important;
 }
 
-/* Hide UI elements from PDF */
-.no-print, .download-btn, .toolbar, nav, header {
-  display: none !important;
-}
-
 /* Lock resume preview container for consistent PDF capture */
 [data-resume-page], #cover-letter-preview-node {
-  width: 820px !important;
   overflow: visible !important;
   box-shadow: none !important;
 }
