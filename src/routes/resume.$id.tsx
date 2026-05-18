@@ -694,16 +694,20 @@ function Builder() {
     if (!node) throw new Error("Preview not ready");
     const { default: html2canvas } = await import("html2canvas-pro");
 
-    // Reset on-screen scale so the export captures at full 820px width
+    // Reset on-screen scale so export captures at full 820px width
     const prevTransform = node.style.transform;
+    const prevWidth = node.style.width;
     node.style.transform = "none";
+    node.style.width = "820px"; // Explicitly lock width — prevents mobile columns collapsing
 
-    // Sanitize cross-origin / broken images to prevent canvas taint & wrong PNG signature
+    // Sanitize cross-origin / broken images to prevent canvas taint
     const restoreImages = sanitizeImagesForExport(node);
 
     try {
-      // Ensure all custom fonts are ready
+      // Wait for custom Google Fonts to fully load
       await document.fonts.ready;
+      // Extra 500ms buffer for late-loading fonts and images
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(node, {
         scale: 2,
@@ -711,16 +715,22 @@ function Builder() {
         useCORS: true,
         allowTaint: false,
         width: 820,
+        windowWidth: 820,   // KEY FIX: prevents responsive CSS from collapsing columns
+        scrollX: 0,
+        scrollY: 0,
         logging: false,
         onclone: (clonedDoc) => {
           const cloned = clonedDoc.querySelector("[data-resume-page]") as HTMLElement;
           if (!cloned) return;
 
-          // Force background colors and typography to render perfectly
+          // Lock width in clone too
+          cloned.style.width = "820px";
+          cloned.style.transform = "none";
           cloned.style.webkitPrintColorAdjust = "exact";
           cloned.style.printColorAdjust = "exact";
           cloned.style.colorAdjust = "exact";
 
+          // Copy ALL computed styles — background colors, fonts, colors
           const allElements = cloned.querySelectorAll("*");
           allElements.forEach((el) => {
             const htmlEl = el as HTMLElement;
@@ -729,37 +739,36 @@ function Builder() {
             if (computed.backgroundColor && computed.backgroundColor !== "rgba(0, 0, 0, 0)" && computed.backgroundColor !== "transparent") {
               htmlEl.style.backgroundColor = computed.backgroundColor;
             }
-            if (computed.color) {
-              htmlEl.style.color = computed.color;
-            }
-            if (computed.fontFamily) {
-              htmlEl.style.fontFamily = computed.fontFamily;
-            }
-            if (computed.fontSize) {
-              htmlEl.style.fontSize = computed.fontSize;
-            }
-            if (computed.fontWeight) {
-              htmlEl.style.fontWeight = computed.fontWeight;
-            }
+            if (computed.color) htmlEl.style.color = computed.color;
+            if (computed.fontFamily) htmlEl.style.fontFamily = computed.fontFamily;
+            if (computed.fontSize) htmlEl.style.fontSize = computed.fontSize;
+            if (computed.fontWeight) htmlEl.style.fontWeight = computed.fontWeight;
+            if (computed.lineHeight) htmlEl.style.lineHeight = computed.lineHeight;
 
             htmlEl.style.webkitPrintColorAdjust = "exact";
             htmlEl.style.printColorAdjust = "exact";
             htmlEl.style.colorAdjust = "exact";
           });
 
-          // Explicit sidebar background match
+          // Explicitly force sidebar background (golden/colored sidebars)
           const sidebar = cloned.querySelector('.resume-sidebar, [class*="sidebar"], [class*="right-panel"]') as HTMLElement;
           if (sidebar) {
             const bg = window.getComputedStyle(sidebar).backgroundColor;
             sidebar.style.backgroundColor = bg;
             sidebar.style.webkitPrintColorAdjust = "exact";
-            sidebar.style.printColorAdjust = "exact";
           }
+
+          // Force skill/progress bars
+          cloned.querySelectorAll('[class*="skill"], [class*="progress"], [class*="bar"]').forEach((bar) => {
+            (bar as HTMLElement).style.webkitPrintColorAdjust = "exact";
+            (bar as HTMLElement).style.printColorAdjust = "exact";
+          });
         }
       });
       return canvas;
     } finally {
       node.style.transform = prevTransform;
+      node.style.width = prevWidth;
       restoreImages();
     }
   };
@@ -892,11 +901,34 @@ function Builder() {
         pdf.addImage(clImgDataUrl, "JPEG", 0, 0, pageW, pageH);
       }
 
-      const blob = pdf.output("blob");
-      downloadBlob(blob, `${title || "resume"}.pdf`, user?.uid);
-      
+      // Use pdf.save() directly — jsPDF sets the 'download' attribute on the anchor
+      // which IDM and all download managers respect → correct filename, not a UUID
+      const safeFilename = `${(data.basics.name || title || "resume").replace(/[^a-z0-9\-_\s]/gi, "").trim().replace(/\s+/g, "-") || "resume"}.pdf`;
+      pdf.save(safeFilename);
+
+      // Fire-and-forget download tracking (does not block UI)
+      if (user?.uid) {
+        Promise.all([
+          import("firebase/firestore"),
+          import("@/lib/firebase"),
+        ]).then(async ([{ doc, updateDoc, setDoc, collection, increment }, { db }]) => {
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, {
+            downloadCount: increment(1),
+            lastDownloadAt: new Date().toISOString()
+          }).catch(() => {});
+          const logRef = doc(collection(db, "download_logs"));
+          await setDoc(logRef, {
+            userId: user.uid,
+            filename: safeFilename,
+            fileType: "pdf",
+            downloadedAt: new Date().toISOString()
+          }).catch(() => {});
+        }).catch(() => {});
+      }
+
       if (clCanvas) {
-        toast.success("Resume + Cover Letter PDF downloaded successfully!");
+        toast.success("Resume + Cover Letter PDF downloaded!");
       } else {
         toast.success("PDF downloaded successfully!");
       }
