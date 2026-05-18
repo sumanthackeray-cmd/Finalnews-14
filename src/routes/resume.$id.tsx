@@ -747,9 +747,13 @@ function Builder() {
       const ratio = canvas.height / canvas.width;
       const imgH = pageW * ratio;
 
-      if (imgH <= pageH) {
+      // Smart A4 Auto-Fit: If the resume only overflows slightly (up to 25% beyond a single A4 page),
+      // scale it proportionally to fit 100% perfectly on a single A4 page!
+      const maxCanvasHeightForSinglePage = canvas.width * (pageH / pageW) * 1.25;
+
+      if (imgH <= pageH || canvas.height <= maxCanvasHeightForSinglePage) {
         // Single page — fits perfectly
-        pdf.addImage(imgDataUrl, "JPEG", 0, 0, pageW, imgH);
+        pdf.addImage(imgDataUrl, "JPEG", 0, 0, pageW, pageH);
       } else {
         // Multi-page slicing
         let yPos = 0;
@@ -765,7 +769,7 @@ function Builder() {
           ctx.drawImage(canvas, 0, yPos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
           const sliceData = slice.toDataURL("image/jpeg", 0.97);
           if (yPos > 0) pdf.addPage();
-          pdf.addImage(sliceData, "JPEG", 0, 0, pageW, (sliceH * pageW) / canvas.width);
+          pdf.addImage(sliceData, "JPEG", 0, 0, pageW, pageH);
           yPos += pageCanvasH;
         }
       }
@@ -1516,13 +1520,61 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
     ? data.skills.slice(0, 4).map(s => { const skill = s as any; return { name: skill.name || skill, level: skill.level || 85 }; }) 
     : fallbackSkills;
 
+  // Dynamic A4 Page Spacing & Typography Auto-Fit calculation based on text length
+  const totalLength = clText.length;
+  let letterFontSize = "11.5px";
+  let letterLineHeight = "1.65";
+  let letterGap = "14px";
+  let letterMarginTop = "40px";
+  let letterGreetingMargin = "10px 0 5px 0";
+  let classicPadding = "60px 70px";
+  let modernPadding = "60px 65px";
+  let splitPaddingSide = "80px 40px 40px 40px";
+  let splitPaddingSidebar = "80px 24px 40px 24px";
+  let averyPadding = "50px 60px";
+
+  if (totalLength > 1800) {
+    letterFontSize = "9.5px";
+    letterLineHeight = "1.35";
+    letterGap = "8px";
+    letterMarginTop = "15px";
+    letterGreetingMargin = "4px 0 2px 0";
+    classicPadding = "35px 50px";
+    modernPadding = "35px 50px";
+    splitPaddingSide = "45px 30px 30px 30px";
+    splitPaddingSidebar = "45px 20px 20px 20px";
+    averyPadding = "30px 45px";
+  } else if (totalLength > 1400) {
+    letterFontSize = "10px";
+    letterLineHeight = "1.45";
+    letterGap = "10px";
+    letterMarginTop = "20px";
+    letterGreetingMargin = "6px 0 3px 0";
+    classicPadding = "45px 60px";
+    modernPadding = "45px 55px";
+    splitPaddingSide = "55px 35px 35px 35px";
+    splitPaddingSidebar = "55px 22px 30px 22px";
+    averyPadding = "35px 50px";
+  } else if (totalLength > 1000) {
+    letterFontSize = "10.5px";
+    letterLineHeight = "1.55";
+    letterGap = "12px";
+    letterMarginTop = "30px";
+    letterGreetingMargin = "8px 0 4px 0";
+    classicPadding = "50px 65px";
+    modernPadding = "50px 60px";
+    splitPaddingSide = "70px 40px 40px 40px";
+    splitPaddingSidebar = "70px 24px 35px 24px";
+    averyPadding = "42px 55px";
+  }
+
   if (template === "classic") {
     return (
       <div style={{
         width: "820px",
         height: "1160px",
         backgroundColor: "#ffffff",
-        padding: "60px 70px",
+        padding: classicPadding,
         position: "relative",
         overflow: "hidden",
         fontFamily: "'Times New Roman', Times, serif",
@@ -1545,9 +1597,9 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
         </header>
 
         {/* Content */}
-        <div style={{ flex: 1, marginTop: "40px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ flex: 1, marginTop: letterMarginTop, display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Date & Recipient */}
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11.5px", color: "#333" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: letterFontSize, color: "#333" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               <span style={{ fontWeight: "700" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
               <span>{clRole || "Senior Manager"}</span>
@@ -1557,14 +1609,14 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
           </div>
 
           {/* Greeting */}
-          <p style={{ fontSize: "12.5px", fontWeight: "700", margin: "10px 0 5px 0" }}>
+          <p style={{ fontSize: parseFloat(letterFontSize) + 1 + "px", fontWeight: "700", margin: letterGreetingMargin }}>
             Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
           </p>
 
           {/* Letter Body */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: letterGap }}>
             {paragraphs.map((p, i) => (
-              <p key={i} style={{ fontSize: "11.5px", lineHeight: "1.7", textAlign: "justify", margin: 0 }}>
+              <p key={i} style={{ fontSize: letterFontSize, lineHeight: letterLineHeight, textAlign: "justify", margin: 0 }}>
                 {p}
               </p>
             ))}
@@ -1573,7 +1625,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
 
         {/* Closing & Signature */}
         <footer style={{ borderTop: "1px solid #1a1a1a", paddingTop: "15px", marginTop: "20px" }}>
-          <p style={{ fontSize: "11.5px", margin: 0 }}>Sincerely yours,</p>
+          <p style={{ fontSize: letterFontSize, margin: 0 }}>Sincerely yours,</p>
           {clSignature ? (
             <img src={clSignature} alt="Signature" style={{ maxHeight: "40px", maxWidth: "160px", margin: "6px 0", objectFit: "contain" }} />
           ) : (
@@ -1593,7 +1645,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
         width: "820px",
         height: "1160px",
         backgroundColor: "#ffffff",
-        padding: isMin ? "70px 80px" : "60px 65px",
+        padding: isMin ? "70px 80px" : modernPadding,
         position: "relative",
         overflow: "hidden",
         fontFamily: "'Inter', sans-serif",
@@ -1625,9 +1677,9 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
         </header>
 
         {/* Content */}
-        <div style={{ flex: 1, marginTop: isMin ? "50px" : "35px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={{ flex: 1, marginTop: isMin ? "40px" : letterMarginTop, display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Recipient & Date */}
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#555" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: letterFontSize, color: "#555" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               <span style={{ fontWeight: "700", color: "#111" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
               <span>{clRole || "Senior Manager"}</span>
@@ -1636,13 +1688,13 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
             <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>
 
-          <p style={{ fontSize: "13px", fontWeight: "700", color: "#111", margin: "10px 0 0 0" }}>
+          <p style={{ fontSize: parseFloat(letterFontSize) + 1.5 + "px", fontWeight: "700", color: "#111", margin: "10px 0 0 0" }}>
             Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: letterGap }}>
             {paragraphs.map((p, i) => (
-              <p key={i} style={{ fontSize: "11px", lineHeight: "1.65", color: "#222", textAlign: "justify", margin: 0 }}>
+              <p key={i} style={{ fontSize: letterFontSize, lineHeight: letterLineHeight, color: "#222", textAlign: "justify", margin: 0 }}>
                 {p}
               </p>
             ))}
@@ -1651,7 +1703,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
 
         {/* Footer */}
         <footer style={{ borderTop: "1.5px solid #eaeaea", paddingTop: "20px" }}>
-          <p style={{ fontSize: "11px", color: "#666", margin: 0 }}>Sincerely,</p>
+          <p style={{ fontSize: letterFontSize, color: "#666", margin: 0 }}>Sincerely,</p>
           {clSignature ? (
             <img src={clSignature} alt="Signature" style={{ maxHeight: "36px", maxWidth: "150px", margin: "8px 0", objectFit: "contain" }} />
           ) : (
@@ -1728,7 +1780,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
         width: sidebarWidth,
         height: "1160px",
         backgroundColor: sidebarBg,
-        padding: "80px 24px 40px 24px",
+        padding: splitPaddingSidebar,
         display: "flex",
         flexDirection: "column",
         gap: "28px",
@@ -1838,7 +1890,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
         width: mainWidth,
         height: "1160px",
         backgroundColor: "#ffffff",
-        padding: "80px 40px 40px 40px",
+        padding: splitPaddingSide,
         display: "flex",
         flexDirection: "column",
         fontFamily: fontTheme
@@ -1848,7 +1900,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          fontSize: "11px",
+          fontSize: letterFontSize,
           color: "#475569",
           marginTop: "16px"
         }}>
@@ -1866,7 +1918,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
 
         {/* Salutation */}
         <div style={{
-          fontSize: "13px",
+          fontSize: parseFloat(letterFontSize) + 1.5 + "px",
           fontWeight: "700",
           color: "#0f172a",
           marginTop: "32px",
@@ -1880,12 +1932,12 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          gap: "14px"
+          gap: letterGap
         }}>
           {paragraphs.map((p, i) => (
             <p key={i} style={{
-              fontSize: "11px",
-              lineHeight: "1.65",
+              fontSize: letterFontSize,
+              lineHeight: letterLineHeight,
               color: "#334155",
               textAlign: "justify",
               margin: 0
@@ -1901,7 +1953,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
           paddingTop: "20px",
           borderTop: "1px solid #f1f5f9"
         }}>
-          <span style={{ fontSize: "11px", color: "#475569" }}>Sincerely Yours,</span>
+          <span style={{ fontSize: letterFontSize, color: "#475569" }}>Sincerely Yours,</span>
           {clSignature ? (
             <div style={{ margin: "6px 0", display: "block" }}>
               <img src={clSignature} alt="Signature" style={{ maxHeight: "40px", maxWidth: "160px", objectFit: "contain" }} />
@@ -1963,7 +2015,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
       <div style={{ position: "absolute", top: "-64px", right: "40px", width: "224px", height: "224px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
       <div style={{ position: "absolute", bottom: "-64px", right: "24px", width: "176px", height: "176px", borderRadius: "50%", background: ORANGE, zIndex: 1 }} />
 
-      <div style={{ position: "relative", padding: "50px 60px", zIndex: 10, display: "flex", flexDirection: "column", height: "1160px" }}>
+      <div style={{ position: "relative", padding: averyPadding, zIndex: 10, display: "flex", flexDirection: "column", height: "1160px" }}>
         {/* Header */}
         <div style={{ display: "flex", gap: "32px", alignItems: "flex-end" }}>
           <div style={{ width: "130px", height: "130px", borderRadius: "50%", border: "4px solid #eaeaea", overflow: "hidden", backgroundColor: "#fff", flexShrink: 0 }}>
@@ -1991,7 +2043,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
             <h2 style={{ fontSize: "16px", fontWeight: "900", textDecoration: "underline", textUnderlineOffset: "4px", marginBottom: "16px", margin: 0 }}>
               Contact Details
             </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "11px", color: "#333" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: letterFontSize, color: "#333" }}>
               {data.basics.phone && <p style={{ margin: 0 }}>☎ &nbsp; {data.basics.phone}</p>}
               {data.basics.email && <p style={{ margin: 0, wordBreak: "break-all" }}>✉ &nbsp; {data.basics.email}</p>}
               {data.basics.location && <p style={{ margin: 0 }}>📍 &nbsp; {data.basics.location}</p>}
@@ -2011,7 +2063,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
 
           {/* Right letter body column */}
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#555" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: letterFontSize, color: "#555" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 <span style={{ fontWeight: "900", color: "#111" }}>{clCompany ? `Hiring Team at ${clCompany}` : "Hiring Manager"}</span>
                 <span>{clRole || "Senior Manager"}</span>
@@ -2020,13 +2072,13 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
               <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
             </div>
 
-            <p style={{ fontSize: "13px", fontWeight: "900", color: "#111", margin: "24px 0 16px 0" }}>
+            <p style={{ fontSize: parseFloat(letterFontSize) + 1.5 + "px", fontWeight: "900", color: "#111", margin: "24px 0 16px 0" }}>
               Dear {clCompany ? `${clCompany} Team` : "Hiring Manager"},
             </p>
 
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: letterGap }}>
               {paragraphs.map((p, i) => (
-                <p key={i} style={{ fontSize: "11px", lineHeight: "1.65", color: "#333", textAlign: "justify", margin: 0 }}>
+                <p key={i} style={{ fontSize: letterFontSize, lineHeight: letterLineHeight, color: "#333", textAlign: "justify", margin: 0 }}>
                   {p}
                 </p>
               ))}
@@ -2034,7 +2086,7 @@ function CoverLetterPagePreview({ template = "slater", data, clText, clCompany, 
 
             {/* Signature */}
             <div style={{ paddingTop: "20px", borderTop: "1.5px solid #eaeaea", marginTop: "auto" }}>
-              <span style={{ fontSize: "11px", color: "#555" }}>Sincerely Yours,</span>
+              <span style={{ fontSize: letterFontSize, color: "#555" }}>Sincerely Yours,</span>
               {clSignature ? (
                 <div style={{ margin: "6px 0" }}>
                   <img src={clSignature} alt="Signature" style={{ maxHeight: "36px", maxWidth: "150px", objectFit: "contain" }} />
