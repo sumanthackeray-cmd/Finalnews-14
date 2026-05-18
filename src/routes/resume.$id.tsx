@@ -528,7 +528,7 @@ function Builder() {
       node.style.transform = "none";
 
       // Hide all invalid photos before canvas render
-      restoreImages = sanitizeImagesForExport(node);
+      restoreImages = await sanitizeImagesForExport(node);
 
       const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
         import("html2canvas-pro"),
@@ -538,7 +538,7 @@ function Builder() {
       const canvas = await html2canvas(node, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         backgroundColor: "#ffffff",
         width: 820,
         height: 1160,
@@ -548,8 +548,24 @@ function Builder() {
       const pdf = new jsPDF({ unit: "pt", format: "a4" });
       const imgData = canvas.toDataURL("image/jpeg", 0.96);
       pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89);
-      const blob = pdf.output("blob");
-      await downloadBlob(blob, `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/\s+/g, "-")}.pdf`, user?.uid);
+
+      const clFilename = `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/[^a-z0-9\-_\s]/gi, "").trim().replace(/\s+/g, "-")}.pdf`;
+      pdf.save(clFilename);
+
+      // Fire-and-forget download tracking
+      if (user?.uid) {
+        Promise.all([
+          import("firebase/firestore"),
+          import("@/lib/firebase"),
+        ]).then(async ([{ doc, updateDoc, setDoc, collection, increment }, { db }]) => {
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, {
+            downloadCount: increment(1),
+            lastDownloadAt: new Date().toISOString()
+          }).catch(() => {});
+        }).catch(() => {});
+      }
+
       toast.success("Cover letter PDF downloaded!");
     } catch (error: any) {
       console.error("Cover letter PDF export error:", error);
@@ -592,7 +608,7 @@ function Builder() {
       node.style.transform = "none";
 
       // Hide all invalid photos before canvas render
-      restoreImages = sanitizeImagesForExport(node);
+      restoreImages = await sanitizeImagesForExport(node);
 
       const [{ default: html2canvas }, { Document, Packer, Paragraph, ImageRun }, { saveAs }] = await Promise.all([
         import("html2canvas-pro"),
@@ -603,7 +619,7 @@ function Builder() {
       const canvas = await html2canvas(node, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         backgroundColor: "#ffffff",
         width: 820,
         height: 1160,
@@ -831,7 +847,7 @@ function Builder() {
         clCanvas = await html2canvas(clNode, {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
           backgroundColor: "#ffffff",
           width: 820,
           height: 1160,
@@ -1011,7 +1027,7 @@ function Builder() {
         const clCanvas = await html2canvas(clNode, {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
           backgroundColor: "#ffffff",
           width: 820,
           height: 1160,
