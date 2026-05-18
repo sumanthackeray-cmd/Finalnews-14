@@ -19,7 +19,9 @@ export type AIAction =
   | "chat"
   | "tailor-to-job"
   | "interview-questions"
-  | "complete-resume";
+  | "evaluate-interview"
+  | "complete-resume"
+  | "complete-resume-wizard";
 
 // ── Core Vogats AI fetch helper (runs directly in the browser) ─────────────────
 async function vogatsAIChat(
@@ -59,6 +61,17 @@ async function vogatsAIChat(
 
   const data = await res.json();
   return (data as any).choices?.[0]?.message?.content ?? "";
+}
+
+function parseSafeJSON(text: string): any {
+  if (!text) return null;
+  let cleaned = text.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\n?/i, "");
+    cleaned = cleaned.replace(/\n?```$/, "");
+  }
+  cleaned = cleaned.trim();
+  return JSON.parse(cleaned);
 }
 
 // ── Exported generateAIContent – same API surface as before ──────────────────
@@ -823,9 +836,63 @@ Notable Achievements: ${JSON.stringify((data.experience || []).flatMap((e: any) 
 
       const text = await vogatsAIChat(system, user, true);
       try {
-        return JSON.parse(text);
+        return parseSafeJSON(text);
       } catch {
         return { questions: [] };
+      }
+    }
+
+    // ── Interview Performance Evaluation ─────────────────────────────────
+    if (action === "evaluate-interview") {
+      const system = `You are a world-class executive interview coach and senior technical recruiter.
+Evaluate the candidate's answers to the mock interview questions and compile a comprehensive Performance Assessment Report.
+Be highly constructive, detailed, and realistic in scoring.
+Provide a detailed score for communication, technical knowledge, and structured answering (STAR alignment).
+Give explicit actionable feedback for every single answer.
+Provide a realistic "Model Answer" for each question that represents how a top 1% candidate would answer.
+
+Return ONLY a valid JSON object matching this exact schema:
+{
+  "overallScore": <0-100>,
+  "communicationScore": <0-10>,
+  "technicalScore": <0-10>,
+  "starScore": <0-10>,
+  "summary": "Overall feedback summary...",
+  "strengths": ["strength1", "strength2"],
+  "improvements": ["improvement1", "improvement2"],
+  "evaluations": [
+    {
+      "question": "The question asked...",
+      "answer": "Candidate's answer...",
+      "score": <0-100>,
+      "feedback": "Detailed, specific feedback on what they did well and what's missing.",
+      "modelAnswer": "Elite model answer..."
+    }
+  ]
+}`;
+
+      const user = `Compile performance report for:
+Candidate Name: ${data.name || "Candidate"}
+Target Role: ${data.title || "Professional"}
+Interview Q&As:
+${JSON.stringify(data.qaList || [])}
+
+Analyze their answers thoroughly, score them fairly, and generate a beautiful constructive feedback report. Return ONLY valid JSON.`;
+
+      const text = await vogatsAIChat(system, user, true);
+      try {
+        return parseSafeJSON(text);
+      } catch {
+        return {
+          overallScore: 65,
+          communicationScore: 6,
+          technicalScore: 6,
+          starScore: 5,
+          summary: "Could not compile full report dynamically. Review the individual answers below.",
+          strengths: ["Completed all questions"],
+          improvements: ["Elaborate with more metrics"],
+          evaluations: []
+        };
       }
     }
 
@@ -851,9 +918,97 @@ Return ONLY valid JSON.`;
 
       const text = await vogatsAIChat(system, user, true);
       try {
-        return JSON.parse(text);
+        return parseSafeJSON(text);
       } catch {
         return { summary: "", suggestedBullets: {}, skills: [], hobbies: [] };
+      }
+    }
+
+    // ── Complete Resume Wizard ─────────────────────────────────────────
+    if (action === "complete-resume-wizard") {
+      const system = `You are a world-class elite professional resume writer, career consultant, and ATS optimizer.
+Your job is to take raw, basic conversational inputs from the user and craft a premium, high-impact resume and matching cover letter structure.
+You MUST write:
+1. A highly professional, compelling 3-4 sentence "summary" that highlights their target role, expertise level, and main value proposition.
+2. Formatted "experience": draft exactly 2 distinct, highly relevant job experiences. For each experience, provide role, company, location (e.g. Remote / Hybrid), start/end dates, and exactly 4 recruiter-friendly, high-impact bullet points inside "bullets" using the STAR method (Situation, Task, Action, Result) with realistic metrics.
+3. Formatted "projects": draft exactly 2 distinct featured projects. For each, provide name, description (highly engaging, polished), and a placeholder github/web link.
+4. "skills": provide a comprehensive array of 8-12 skills, combining the user's input skills with industry-standard, high-relevance technical/soft skills for their role.
+5. "hobbies": provide a clean array of 3-4 relevant, active hobbies.
+6. Formatted "education": provide school, degree, start/end dates, and a polished suggestion for notes.
+7. Formatted "coverLetter": IF requested, draft an exceptional, persuasive 3-paragraph cover letter tailored to their target role, highlight their top skills, and end with a confident call to action.
+
+Output ONLY a valid JSON object exactly matching this schema:
+{
+  "summary": "Compelling summary...",
+  "experience": [
+    {
+      "company": "...",
+      "role": "...",
+      "location": "...",
+      "start": "...",
+      "end": "...",
+      "bullets": ["Bullet 1", "Bullet 2", "Bullet 3", "Bullet 4"]
+    },
+    {
+      "company": "...",
+      "role": "...",
+      "location": "...",
+      "start": "...",
+      "end": "...",
+      "bullets": ["Bullet 1", "Bullet 2", "Bullet 3", "Bullet 4"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "...",
+      "description": "...",
+      "link": "..."
+    },
+    {
+      "name": "...",
+      "description": "...",
+      "link": "..."
+    }
+  ],
+  "skills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6", "skill7", "skill8"],
+  "hobbies": ["hobby1", "hobby2", "hobby3"],
+  "education": {
+    "school": "...",
+    "degree": "...",
+    "start": "...",
+    "end": "...",
+    "notes": "..."
+  },
+  "coverLetter": "..."
+}`;
+
+      const user = `Generate premium resume + cover letter content based on this structured wizard input:
+- Name: ${data.name}
+- Target Role: ${data.title}
+- Experience Level: ${data.experienceLevel}
+- Input Skills: ${data.skillsInput}
+- Work History: Company: "${data.workCompany}", Role: "${data.workRole}", Achievement: "${data.workAchievement}"
+- Featured Project: Name: "${data.projectName}", Description: "${data.projectDesc}"
+- Education: School: "${data.eduSchool}", Degree: "${data.eduDegree}"
+- Generate Cover Letter: ${data.generateCoverLetter ? "YES" : "NO"}
+
+Return ONLY valid JSON matching the schema.`;
+
+      const text = await vogatsAIChat(system, user, true);
+      try {
+        return parseSafeJSON(text);
+      } catch {
+        return {
+          summary: "",
+          experience: [
+            { company: data.workCompany, role: data.workRole, location: "Remote / Hybrid", start: "2023", end: "Present", bullets: [data.workAchievement || "Led digital optimization projects."] }
+          ],
+          projects: [
+            { name: data.projectName, description: data.projectDesc, link: "https://github.com" }
+          ],
+          skills: [],
+          hobbies: []
+        };
       }
     }
 

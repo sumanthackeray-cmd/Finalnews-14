@@ -17,6 +17,8 @@ import { TemplatePicker } from "@/components/resume/template-picker";
 import { TemplateCompare } from "@/components/resume/template-compare";
 import { ATSPanel } from "@/components/resume/ats-panel";
 import { AIImproveButton } from "@/components/resume/AIImproveButton";
+import { MockInterviewSimulator } from "@/components/resume/MockInterviewSimulator";
+import { AIResumeWizard } from "@/components/resume/AIResumeWizard";
 import logo from "@/assets/logo.png";
 import type { ResumeData } from "@/lib/resume-types";
 import { emptyResume, sampleResume } from "@/lib/resume-types";
@@ -149,6 +151,7 @@ function Builder() {
   const [interviewQuestions, setInterviewQuestions] = useState<{ type: string; question: string; tip: string }[]>([]);
   const [interviewBusy, setInterviewBusy] = useState(false);
   const [completeResumeBusy, setCompleteResumeBusy] = useState(false);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
@@ -1021,26 +1024,24 @@ function Builder() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-auto py-2 px-2.5 flex-col items-start gap-1 text-left border-accent/30 hover:border-accent hover:bg-accent/10 transition-all group"
-                    onClick={completeResumeWithAI}
-                    disabled={completeResumeBusy}
+                    className="h-auto py-2 px-2.5 flex-col items-start gap-1 text-left border-accent/30 hover:border-accent hover:bg-accent/10 transition-all group animate-pulse border-purple-500/40"
+                    onClick={() => setShowAIWizard(true)}
                   >
                     <div className="flex items-center gap-1.5 w-full">
-                      {completeResumeBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin text-accent shrink-0" /> : <Wand2 className="h-3.5 w-3.5 text-accent shrink-0" />}
-                      <span className="text-[11px] font-semibold text-foreground">Auto-Complete</span>
+                      <Sparkles className="h-3.5 w-3.5 text-purple-500 shrink-0" />
+                      <span className="text-[11px] font-semibold text-foreground">AI Autopilot</span>
                     </div>
-                    <span className="text-[9.5px] text-muted-foreground leading-tight">AI fills empty sections instantly</span>
+                    <span className="text-[9.5px] text-muted-foreground leading-tight">AI guides &amp; drafts your best resume</span>
                   </Button>
                   {/* Interview Coach */}
                   <Button
                     size="sm"
                     variant="outline"
                     className="h-auto py-2 px-2.5 flex-col items-start gap-1 text-left border-purple-500/30 hover:border-purple-500 hover:bg-purple-500/10 transition-all group"
-                    onClick={generateInterviewQuestions}
-                    disabled={interviewBusy}
+                    onClick={() => setShowInterviewCoach(true)}
                   >
                     <div className="flex items-center gap-1.5 w-full">
-                      {interviewBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin text-purple-500 shrink-0" /> : <Star className="h-3.5 w-3.5 text-purple-500 shrink-0" />}
+                      <Star className="h-3.5 w-3.5 text-purple-500 shrink-0" />
                       <span className="text-[11px] font-semibold text-foreground">Interview Coach</span>
                     </div>
                     <span className="text-[9.5px] text-muted-foreground leading-tight">AI-powered mock interview prep</span>
@@ -1073,36 +1074,6 @@ function Builder() {
                 </div>
               </div>
 
-              {/* Interview Coach Results Panel */}
-              {showInterviewCoach && interviewQuestions.length > 0 && (
-                <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-3.5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-3.5 w-3.5 text-purple-500" />
-                      <span className="text-xs font-bold text-purple-600">AI Interview Prep — {interviewQuestions.length} Questions</span>
-                    </div>
-                    <button onClick={() => setShowInterviewCoach(false)} className="text-muted-foreground hover:text-foreground text-xs">✕ Close</button>
-                  </div>
-                  <div className="space-y-3 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
-                    {interviewQuestions.map((q, i) => (
-                      <div key={i} className="rounded-lg bg-background border border-purple-500/20 p-3 space-y-1.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-600">{q.type}</span>
-                          <span className="text-[10px] text-muted-foreground">Q{i + 1}</span>
-                        </div>
-                        <p className="text-[11.5px] font-semibold text-foreground leading-snug">{q.question}</p>
-                        <div className="flex items-start gap-1.5">
-                          <Sparkles className="h-2.5 w-2.5 text-accent mt-0.5 shrink-0" />
-                          <p className="text-[10px] text-muted-foreground leading-snug italic">{q.tip}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={generateInterviewQuestions} disabled={interviewBusy}>
-                    {interviewBusy ? <><Loader2 className="h-3 w-3 mr-1.5 animate-spin" />Refreshing…</> : <><Wand2 className="h-3 w-3 mr-1.5" />Refresh Questions</>}
-                  </Button>
-                </div>
-              )}
 
               <PhotoField
                 value={data.basics.photo}
@@ -1482,6 +1453,50 @@ function Builder() {
           <ResponsivePreview template={template} data={data} clText={clText} clCompany={clCompany} clRole={clRole} clSignature={clSignature} />
         </main>
       </div>
+
+      <MockInterviewSimulator
+        isOpen={showInterviewCoach}
+        onClose={() => setShowInterviewCoach(false)}
+        resumeData={data}
+        user={user}
+      />
+
+      <AIResumeWizard
+        isOpen={showAIWizard}
+        onClose={() => setShowAIWizard(false)}
+        onComplete={(completedData, selectedTemplateId) => {
+          // Automatically set selected design template
+          setTemplate(selectedTemplateId);
+
+          // Prefill custom Cover Letter details if generated
+          if (completedData.coverLetterText) {
+            setClText(completedData.coverLetterText);
+            setClCompany(completedData.experience?.[0]?.company || "");
+            setClRole(completedData.basics?.title || "");
+          }
+
+          // Populate fields
+          if (completedData.basics) {
+            update("basics", { ...data.basics, ...completedData.basics });
+          }
+          if (completedData.skills) {
+            update("skills", completedData.skills);
+          }
+          if (completedData.hobbies) {
+            update("hobbies", completedData.hobbies);
+          }
+          if (completedData.experience) {
+            update("experience", completedData.experience);
+          }
+          if (completedData.projects) {
+            update("projects", completedData.projects);
+          }
+          if (completedData.education) {
+            update("education", completedData.education);
+          }
+        }}
+        initialData={data}
+      />
     </div>
   );
 }
