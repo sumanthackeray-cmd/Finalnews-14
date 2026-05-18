@@ -661,30 +661,49 @@ function Builder() {
    * This prevents canvas taint (which produces invalid PNG data URLs that jsPDF rejects).
    * Returns a cleanup function that restores all original src attributes.
    */
-  const sanitizeImagesForExport = (node: HTMLElement): (() => void) => {
+  const sanitizeImagesForExport = async (node: HTMLElement): Promise<(() => void)> => {
     const imgEls = Array.from(node.querySelectorAll<HTMLImageElement>("img"));
     const origSrcs: string[] = imgEls.map((img) => img.src);
 
-    imgEls.forEach((img) => {
-      // If image is not loaded, broken, or cross-origin (non data:), hide it for export
-      if (!img.complete || img.naturalWidth === 0) {
-        img.style.visibility = "hidden";
+    const blankGif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+    for (let i = 0; i < imgEls.length; i++) {
+      const img = imgEls[i];
+
+      // If image is not complete or naturalWidth is 0 (broken/loading), replace it
+      if (img.src && !img.complete && img.naturalWidth === 0) {
+        img.src = blankGif;
+        continue;
       }
-      // If the image source is not a valid photo, hide it
+      // If the image source is not a valid photo, replace it
       if (!isValidPhoto(img.src)) {
-        img.style.visibility = "hidden";
+        img.src = blankGif;
+        continue;
       }
-      // If it's an external URL (not a data: URL), convert cross-origin images to avoid taint
-      // by hiding them — html2canvas useCORS handles data: URLs natively
+      // If it's an external URL (not a data: URL), convert cross-origin images to base64
+      // to avoid canvas taint, falling back to blank gif if CORS is not allowed by the server.
       if (img.src && !img.src.startsWith("data:") && !img.src.startsWith("blob:")) {
-        img.style.visibility = "hidden";
+        try {
+          const res = await fetch(img.src, { mode: "cors", cache: "no-cache" });
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          const blob = await res.blob();
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          img.src = base64;
+        } catch (err) {
+          console.warn("Failed to fetch cross-origin image with CORS, using blank fallback to prevent taint:", err);
+          img.src = blankGif;
+        }
       }
-    });
+    }
 
     return () => {
       imgEls.forEach((img, i) => {
         img.src = origSrcs[i];
-        img.style.visibility = "";
       });
     };
   };
@@ -701,7 +720,7 @@ function Builder() {
     node.style.width = "820px"; // Explicitly lock width — prevents mobile columns collapsing
 
     // Sanitize cross-origin / broken images to prevent canvas taint
-    const restoreImages = sanitizeImagesForExport(node);
+    const restoreImages = await sanitizeImagesForExport(node);
 
     try {
       // Wait for custom Google Fonts to fully load
@@ -804,7 +823,7 @@ function Builder() {
       if (clNode) {
         clPrevTransform = clNode.style.transform;
         clNode.style.transform = "none";
-        clRestoreImages = sanitizeImagesForExport(clNode);
+        clRestoreImages = await sanitizeImagesForExport(clNode);
         
         // Ensure all custom fonts are ready
         await document.fonts.ready;
@@ -988,7 +1007,7 @@ function Builder() {
       if (clNode) {
         clPrevTransform = clNode.style.transform;
         clNode.style.transform = "none";
-        clRestoreImages = sanitizeImagesForExport(clNode);
+        clRestoreImages = await sanitizeImagesForExport(clNode);
         const clCanvas = await html2canvas(clNode, {
           scale: 2,
           useCORS: true,
