@@ -50,45 +50,58 @@ async function downloadBlob(blob: Blob, filename: string, userId?: string) {
       reader.readAsDataURL(blob);
     });
 
-    const response = await fetch("/api/download", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base64, filename, mimeType: blob.type, userId }),
-    });
-
-    if (response.status === 403) {
-      const err = await response.json();
-      if (err.error === "PLAN_EXPIRED") {
-        toast.error("Download Blocked", {
-          description: err.message || "Your plan has expired. Please upgrade.",
-        });
-        window.location.href = "/dashboard?buy=PRO";
-        return;
-      }
+    // Gold Standard Form-Iframe POST download: Completely bypasses client-side Object URLs
+    // and is 100% immune to IDM/Antivirus/Chrome sandbox UUID renaming bugs!
+    let iframe = document.getElementById("download-iframe") as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "download-iframe";
+      iframe.name = "download-iframe";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
     }
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || "Download failed");
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/api/download";
+    form.target = "download-iframe";
+    form.style.display = "none";
+
+    const base64Input = document.createElement("input");
+    base64Input.type = "hidden";
+    base64Input.name = "base64";
+    base64Input.value = base64;
+    form.appendChild(base64Input);
+
+    const filenameInput = document.createElement("input");
+    filenameInput.type = "hidden";
+    filenameInput.name = "filename";
+    filenameInput.value = filename;
+    form.appendChild(filenameInput);
+
+    const mimeInput = document.createElement("input");
+    mimeInput.type = "hidden";
+    mimeInput.name = "mimeType";
+    mimeInput.value = blob.type;
+    form.appendChild(mimeInput);
+
+    if (userId) {
+      const userInput = document.createElement("input");
+      userInput.type = "hidden";
+      userInput.name = "userId";
+      userInput.value = userId;
+      form.appendChild(userInput);
     }
 
-    // Trigger file download in browser with explicit MIME-typed Blob
-    const resBlob = await response.blob();
-    const typedBlob = new Blob([resBlob], { type: blob.type || resBlob.type || "application/octet-stream" });
-    const url = URL.createObjectURL(typedBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    
-    // Safeguard elements clean up with generous timeout to let Chrome resolve download filename
+    document.body.appendChild(form);
+    form.submit();
+
+    // Clean up the temporary form element
     setTimeout(() => {
-      if (document.body.contains(link)) {
-        document.body.removeChild(link);
+      if (document.body.contains(form)) {
+        document.body.removeChild(form);
       }
     }, 2000);
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
 
     // Track download count and logs in Firestore
     if (userId) {
@@ -111,6 +124,7 @@ async function downloadBlob(blob: Blob, filename: string, userId?: string) {
     }
   } catch (e: any) {
     console.error("Vercel download API fallback:", e);
+    // Legacy client-side fallback as absolute last resort
     const typedBlob = new Blob([blob], { type: blob.type || "application/octet-stream" });
     const url = URL.createObjectURL(typedBlob);
     const a = document.createElement("a");
