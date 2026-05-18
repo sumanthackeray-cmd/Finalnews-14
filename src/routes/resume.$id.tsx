@@ -702,6 +702,9 @@ function Builder() {
     const restoreImages = sanitizeImagesForExport(node);
 
     try {
+      // Ensure all custom fonts are ready
+      await document.fonts.ready;
+
       const canvas = await html2canvas(node, {
         scale: 2,
         backgroundColor: "#ffffff",
@@ -709,6 +712,50 @@ function Builder() {
         allowTaint: false,
         width: 820,
         logging: false,
+        onclone: (clonedDoc) => {
+          const cloned = clonedDoc.querySelector("[data-resume-page]") as HTMLElement;
+          if (!cloned) return;
+
+          // Force background colors and typography to render perfectly
+          cloned.style.webkitPrintColorAdjust = "exact";
+          cloned.style.printColorAdjust = "exact";
+          cloned.style.colorAdjust = "exact";
+
+          const allElements = cloned.querySelectorAll("*");
+          allElements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computed = window.getComputedStyle(htmlEl);
+
+            if (computed.backgroundColor && computed.backgroundColor !== "rgba(0, 0, 0, 0)" && computed.backgroundColor !== "transparent") {
+              htmlEl.style.backgroundColor = computed.backgroundColor;
+            }
+            if (computed.color) {
+              htmlEl.style.color = computed.color;
+            }
+            if (computed.fontFamily) {
+              htmlEl.style.fontFamily = computed.fontFamily;
+            }
+            if (computed.fontSize) {
+              htmlEl.style.fontSize = computed.fontSize;
+            }
+            if (computed.fontWeight) {
+              htmlEl.style.fontWeight = computed.fontWeight;
+            }
+
+            htmlEl.style.webkitPrintColorAdjust = "exact";
+            htmlEl.style.printColorAdjust = "exact";
+            htmlEl.style.colorAdjust = "exact";
+          });
+
+          // Explicit sidebar background match
+          const sidebar = cloned.querySelector('.resume-sidebar, [class*="sidebar"], [class*="right-panel"]') as HTMLElement;
+          if (sidebar) {
+            const bg = window.getComputedStyle(sidebar).backgroundColor;
+            sidebar.style.backgroundColor = bg;
+            sidebar.style.webkitPrintColorAdjust = "exact";
+            sidebar.style.printColorAdjust = "exact";
+          }
+        }
       });
       return canvas;
     } finally {
@@ -749,6 +796,10 @@ function Builder() {
         clPrevTransform = clNode.style.transform;
         clNode.style.transform = "none";
         clRestoreImages = sanitizeImagesForExport(clNode);
+        
+        // Ensure all custom fonts are ready
+        await document.fonts.ready;
+
         clCanvas = await html2canvas(clNode, {
           scale: 2,
           useCORS: true,
@@ -757,6 +808,39 @@ function Builder() {
           width: 820,
           height: 1160,
           logging: false,
+          onclone: (clonedDoc) => {
+            const cloned = clonedDoc.getElementById("cover-letter-preview-node") as HTMLElement;
+            if (!cloned) return;
+
+            cloned.style.webkitPrintColorAdjust = "exact";
+            cloned.style.printColorAdjust = "exact";
+            cloned.style.colorAdjust = "exact";
+
+            const allElements = cloned.querySelectorAll("*");
+            allElements.forEach((el) => {
+              const htmlEl = el as HTMLElement;
+              const computed = window.getComputedStyle(htmlEl);
+
+              if (computed.backgroundColor && computed.backgroundColor !== "rgba(0, 0, 0, 0)" && computed.backgroundColor !== "transparent") {
+                htmlEl.style.backgroundColor = computed.backgroundColor;
+              }
+              if (computed.color) {
+                htmlEl.style.color = computed.color;
+              }
+              if (computed.fontFamily) {
+                htmlEl.style.fontFamily = computed.fontFamily;
+              }
+              if (computed.fontSize) {
+                htmlEl.style.fontSize = computed.fontSize;
+              }
+              if (computed.fontWeight) {
+                htmlEl.style.fontWeight = computed.fontWeight;
+              }
+              htmlEl.style.webkitPrintColorAdjust = "exact";
+              htmlEl.style.printColorAdjust = "exact";
+              htmlEl.style.colorAdjust = "exact";
+            });
+          }
         });
       }
 
