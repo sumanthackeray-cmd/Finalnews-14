@@ -49,6 +49,9 @@ export default defineConfig({
                     return;
                   }
 
+                  // Replace spaces back to '+' (fixes URL-decoding issues where '+' is interpreted as a space)
+                  base64 = base64.replace(/ /g, "+");
+
                   const buffer = Buffer.from(base64, 'base64');
                   
                   let finalMime = mimeType || "application/octet-stream";

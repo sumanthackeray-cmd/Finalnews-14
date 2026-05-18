@@ -86,6 +86,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       base64 = base64.split(",")[1];
     }
 
+    // Replace spaces back to '+' (fixes URL-decoding issues where '+' is interpreted as a space)
+    base64 = base64.replace(/ /g, "+");
+
     const buffer = Buffer.from(base64, "base64");
     
     // Explicitly enforce the MIME type
