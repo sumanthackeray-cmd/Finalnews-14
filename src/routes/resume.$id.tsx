@@ -550,7 +550,8 @@ function Builder() {
       pdf.addImage(imgData, "JPEG", 0, 0, 595.28, 841.89);
 
       const clFilename = `cover-letter-${(clCompany || title || "resume").toLowerCase().replace(/[^a-z0-9\-_\s]/gi, "").trim().replace(/\s+/g, "-")}.pdf`;
-      pdf.save(clFilename);
+      const blob = pdf.output("blob");
+      await downloadBlob(blob, clFilename, user?.uid);
 
       // Fire-and-forget download tracking
       if (user?.uid) {
@@ -936,10 +937,9 @@ function Builder() {
         pdf.addImage(clImgDataUrl, "JPEG", 0, 0, pageW, pageH);
       }
 
-      // Use pdf.save() directly — jsPDF sets the 'download' attribute on the anchor
-      // which IDM and all download managers respect → correct filename, not a UUID
       const safeFilename = `${(data.basics.name || title || "resume").replace(/[^a-z0-9\-_\s]/gi, "").trim().replace(/\s+/g, "-") || "resume"}.pdf`;
-      pdf.save(safeFilename);
+      const blob = pdf.output("blob");
+      await downloadBlob(blob, safeFilename, user?.uid);
 
       // Fire-and-forget download tracking (does not block UI)
       if (user?.uid) {

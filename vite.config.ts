@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'local-api-downloader',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
-            if (req.url === '/api/download' && req.method === 'POST') {
+            if (req.url && (req.url === '/api/download' || req.url.startsWith('/api/download?') || req.url.startsWith('/api/download/')) && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => {
                 body += chunk;
